@@ -1,0 +1,537 @@
+{
+  "_readme": "Sample data for the Paravostra prototype. Edit, commit, and GitHub Pages redeploys in about a minute. Brand ids, SKUs and marketplace codes must match across sections. Marketplace codes: DE, UK, FR, IT, ES, NL, SE, PL, BE, IE, TR. Alert severity: critical, high, medium, low. Case status: Draft, Awaiting Amazon, Needs reply, Resolved. Listing status: live, issue, processing, draft.",
+  "team": [
+    "Ola Nowak",
+    "Marek Zieliński",
+    "Sophie Laurent",
+    "Luca Bianchi"
+  ],
+  "brands": [
+    {
+      "id": "nordhaus",
+      "name": "Nordhaus Kitchen",
+      "weeklyRevenueEUR": 92000,
+      "averagePriceEUR": 41,
+      "products": [
+        {
+          "sku": "NH-SK28",
+          "name": "Cast iron skillet 28 cm",
+          "priceEUR": 44.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "NH-DO52",
+          "name": "Enamelled Dutch oven 5.2 L",
+          "priceEUR": 89,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "NH-WK32",
+          "name": "Carbon steel wok 32 cm",
+          "priceEUR": 39.9,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "NH-RT38",
+          "name": "Enamel roasting tin 38 cm",
+          "priceEUR": 34.5,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "NH-KN20",
+          "name": "Chef's knife 20 cm",
+          "priceEUR": 59,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    },
+    {
+      "id": "alba",
+      "name": "Alba Botanics",
+      "weeklyRevenueEUR": 61000,
+      "averagePriceEUR": 22,
+      "products": [
+        {
+          "sku": "AB-RH30",
+          "name": "Rosehip face oil 30 ml",
+          "priceEUR": 24.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "AB-LV250",
+          "name": "Lavender body wash 250 ml",
+          "priceEUR": 9.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "AB-SH75",
+          "name": "Shea hand cream 75 ml",
+          "priceEUR": 12.5,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "AB-BK30",
+          "name": "Bakuchiol night serum 30 ml",
+          "priceEUR": 32,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "AB-SS300",
+          "name": "Sea salt body scrub 300 g",
+          "priceEUR": 18,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    },
+    {
+      "id": "veloria",
+      "name": "Veloria Sport",
+      "weeklyRevenueEUR": 48000,
+      "averagePriceEUR": 29,
+      "products": [
+        {
+          "sku": "VS-RB5",
+          "name": "Resistance band set (5)",
+          "priceEUR": 24.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "VS-YM6",
+          "name": "Yoga mat 6 mm",
+          "priceEUR": 34.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "VS-FR45",
+          "name": "Foam roller 45 cm",
+          "priceEUR": 27.5,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "VS-RB1",
+          "name": "Running belt",
+          "priceEUR": 19.9,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "VS-GS2",
+          "name": "Grip socks (2 pairs)",
+          "priceEUR": 14.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    }
+  ],
+  "alerts": [
+    {
+      "id": "A1",
+      "brand": "alba",
+      "severity": "critical",
+      "type": "Listing suppressed",
+      "sku": "AB-RH30",
+      "marketplace": "DE",
+      "when": "38 min ago",
+      "impact": "About €410 a day in lost sales",
+      "title": "Rosehip face oil 30 ml is suppressed in Germany",
+      "detail": "Amazon removed the offer from search after a dangerous goods review flagged a missing safety data sheet (SDS). The listing stays suppressed until the SDS is uploaded and approved.",
+      "steps": [
+        "Upload the supplier SDS under dangerous goods classification in Seller Central.",
+        "Open a case to ask for an expedited review if the suppression lasts more than 48 hours."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A2",
+      "brand": "nordhaus",
+      "severity": "high",
+      "type": "Buy Box lost",
+      "sku": "NH-SK28",
+      "marketplace": "FR",
+      "when": "1 h ago",
+      "impact": "About €260 a day in lost sales",
+      "title": "Buy Box lost on Cast iron skillet 28 cm in France",
+      "detail": "Another seller offers the same ASIN at €39.90 with FBA, 11% below your €44.90. You held the Buy Box 96% of the time over the last 30 days.",
+      "steps": [
+        "Check whether the other seller is authorised by Nordhaus.",
+        "If not, report them through Brand Registry as a possible counterfeit or unauthorised seller.",
+        "If they are, consider a temporary price match within the agreed minimum price."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A3",
+      "brand": "nordhaus",
+      "severity": "high",
+      "type": "Low stock",
+      "sku": "NH-DO52",
+      "marketplace": "DE",
+      "when": "3 h ago",
+      "impact": "Stockout in about 9 days",
+      "title": "Enamelled Dutch oven 5.2 L runs out in about 9 days in Germany",
+      "detail": "At the current sales rate, available FBA stock lasts 9 days. The supplier lead time is 8 weeks, so a stockout is likely before new stock arrives.",
+      "steps": [
+        "Review the restock recommendation for this product.",
+        "Consider moving units from the UK or France to Germany in the meantime."
+      ],
+      "source": "FBA Inventory API",
+      "detectedByApi": true,
+      "canOpenCase": false,
+      "openTool": "overview"
+    },
+    {
+      "id": "A4",
+      "brand": "veloria",
+      "severity": "medium",
+      "type": "Stranded inventory",
+      "sku": "VS-YM6",
+      "marketplace": "IT",
+      "when": "6 h ago",
+      "impact": "64 units cannot be sold",
+      "title": "64 units of Yoga mat 6 mm are stranded in Italy",
+      "detail": "The units are in an Amazon warehouse but have no active offer, because the Italian listing closed after a price update failed validation.",
+      "steps": [
+        "Relist the offer with a valid price.",
+        "If relisting fails, create a removal order or open a case."
+      ],
+      "source": "Reports API, daily",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A5",
+      "brand": "veloria",
+      "severity": "critical",
+      "type": "Account health",
+      "sku": "VS-RB5",
+      "marketplace": "UK",
+      "when": "Today, 08:12",
+      "impact": "Policy warning on the account",
+      "title": "Trademark complaint on Resistance band set (5) in the UK",
+      "detail": "A rights owner filed a trademark complaint against the listing. Amazon removed the listing and added a policy warning to the account health dashboard.",
+      "steps": [
+        "Confirm with Veloria that the brand name and images are their own.",
+        "Submit an appeal with the trademark registration and supplier invoice.",
+        "Contact the rights owner if the complaint looks like a mistake."
+      ],
+      "source": "Seller Central, logged by hand. Account health warnings are not available through the SP-API.",
+      "detectedByApi": false,
+      "canOpenCase": true
+    },
+    {
+      "id": "A6",
+      "brand": "nordhaus",
+      "severity": "medium",
+      "type": "Inbound discrepancy",
+      "sku": "NH-WK32",
+      "marketplace": "DE",
+      "when": "Yesterday",
+      "impact": "24 units, about €960 at retail",
+      "title": "Shipment FBA18K2QW7 arrived 24 units short",
+      "detail": "Nordhaus shipped 240 units of Carbon steel wok 32 cm to DTM2. Amazon received 216 and closed the shipment.",
+      "steps": [
+        "Collect the proof of delivery and the packing list.",
+        "Open a reconciliation case for the missing units."
+      ],
+      "source": "Fulfillment Inbound API",
+      "detectedByApi": true,
+      "canOpenCase": true,
+      "shipmentId": "FBA18K2QW7",
+      "units": 24
+    },
+    {
+      "id": "A7",
+      "brand": "alba",
+      "severity": "low",
+      "type": "Price anomaly",
+      "sku": "AB-LV250",
+      "marketplace": "ES",
+      "when": "Yesterday",
+      "impact": "11 units sold below minimum price",
+      "title": "Lavender body wash 250 ml is priced at €2.49 in Spain",
+      "detail": "The price fell from €9.90 to €2.49 after an automated repricer update. Eleven units sold at the lower price.",
+      "steps": [
+        "Restore the price to €9.90.",
+        "Check the repricer rule for Spain."
+      ],
+      "source": "Product Pricing API",
+      "detectedByApi": true,
+      "canOpenCase": false
+    },
+    {
+      "id": "A8",
+      "brand": "nordhaus",
+      "severity": "medium",
+      "type": "New seller on listing",
+      "sku": "NH-WK32",
+      "marketplace": "PL",
+      "when": "2 days ago",
+      "impact": "Possible unauthorised seller",
+      "title": "An unknown seller joined Carbon steel wok 32 cm in Poland",
+      "detail": "A seller called HomeStar24 offers the ASIN at 149 zł (about €35), shipped by the merchant. Nordhaus has no reseller agreement with them.",
+      "steps": [
+        "Make a test purchase to check whether the product is genuine.",
+        "If it is not, report the seller through Brand Registry."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A9",
+      "brand": "alba",
+      "severity": "low",
+      "type": "Listing quality",
+      "sku": "AB-SH75",
+      "marketplace": "SE",
+      "when": "3 days ago",
+      "impact": "Lower search relevance in Sweden",
+      "title": "Shea hand cream 75 ml has no Swedish bullet points",
+      "detail": "The Swedish listing shows the English bullet points, which lowers relevance in Swedish search.",
+      "steps": [
+        "Generate Swedish content in Listings.",
+        "Review and publish it."
+      ],
+      "source": "Listings Items API",
+      "detectedByApi": true,
+      "canOpenCase": false,
+      "openTool": "listings"
+    },
+    {
+      "id": "A10",
+      "brand": "veloria",
+      "severity": "high",
+      "type": "Lost inventory",
+      "sku": "VS-FR45",
+      "marketplace": "FR",
+      "when": "4 days ago",
+      "impact": "12 units, about €330 at retail",
+      "title": "12 units of Foam roller 45 cm were lost in a French warehouse",
+      "detail": "The inventory ledger shows 12 units marked as lost at ORY4, with no automatic reimbursement after 30 days.",
+      "steps": [
+        "Check the reimbursements report.",
+        "Open a case to request reimbursement."
+      ],
+      "source": "Reports API, inventory ledger",
+      "detectedByApi": true,
+      "canOpenCase": true,
+      "units": 12
+    }
+  ],
+  "cases": [
+    {
+      "id": "K1",
+      "brand": "nordhaus",
+      "marketplace": "DE",
+      "sku": "NH-SK28",
+      "subject": "Reimbursement for 18 units lost in warehouse",
+      "status": "Awaiting Amazon",
+      "caseId": "15738204931",
+      "opened": "3 days ago",
+      "followUpInHours": 22,
+      "owner": "Ola Nowak",
+      "history": [
+        {
+          "when": "3 days ago",
+          "who": "Ola Nowak",
+          "text": "Opened the case in Seller Central with the inventory ledger extract.",
+          "fromAmazon": false
+        },
+        {
+          "when": "2 days ago",
+          "who": "Amazon",
+          "text": "Automatic reply: the case is under investigation, with an answer within 3 business days.",
+          "fromAmazon": true
+        }
+      ]
+    },
+    {
+      "id": "K2",
+      "brand": "alba",
+      "marketplace": "FR",
+      "sku": "AB-BK30",
+      "subject": "Listing suppressed: safety data sheet review",
+      "status": "Needs reply",
+      "caseId": "15720991177",
+      "opened": "6 days ago",
+      "followUpInHours": -6,
+      "owner": "Sophie Laurent",
+      "history": [
+        {
+          "when": "6 days ago",
+          "who": "Sophie Laurent",
+          "text": "Opened the case with the English SDS attached.",
+          "fromAmazon": false
+        },
+        {
+          "when": "Yesterday",
+          "who": "Amazon",
+          "text": "Please provide a safety data sheet in French covering sections 1 to 16. Documents in English cannot be accepted for this marketplace.",
+          "fromAmazon": true
+        }
+      ],
+      "amazonAsks": "A safety data sheet in French, sections 1 to 16.",
+      "suggestedNextStep": "Ask Alba Botanics for the French SDS, then reply on the case with it attached."
+    },
+    {
+      "id": "K3",
+      "brand": "nordhaus",
+      "marketplace": "UK",
+      "sku": "NH-RT38",
+      "subject": "Wrong dimensions causing a higher FBA fee",
+      "status": "Awaiting Amazon",
+      "caseId": "15689420058",
+      "opened": "9 days ago",
+      "followUpInHours": -26,
+      "owner": "Marek Zieliński",
+      "history": [
+        {
+          "when": "9 days ago",
+          "who": "Marek Zieliński",
+          "text": "Opened the case with the carton measurements and photos.",
+          "fromAmazon": false
+        },
+        {
+          "when": "7 days ago",
+          "who": "Amazon",
+          "text": "We have asked the fulfilment centre to remeasure the item.",
+          "fromAmazon": true
+        },
+        {
+          "when": "4 days ago",
+          "who": "Marek Zieliński",
+          "text": "Followed up: no update received.",
+          "fromAmazon": false
+        }
+      ]
+    },
+    {
+      "id": "K4",
+      "brand": "veloria",
+      "marketplace": "DE",
+      "sku": null,
+      "subject": "Brand Registry: add a new brand representative",
+      "status": "Resolved",
+      "caseId": "15601143820",
+      "opened": "3 weeks ago",
+      "followUpInHours": null,
+      "owner": "Luca Bianchi",
+      "history": [
+        {
+          "when": "3 weeks ago",
+          "who": "Luca Bianchi",
+          "text": "Opened the case with the authorisation letter.",
+          "fromAmazon": false
+        },
+        {
+          "when": "5 days ago",
+          "who": "Amazon",
+          "text": "The new representative has been added to the brand.",
+          "fromAmazon": true
+        },
+        {
+          "when": "5 days ago",
+          "who": "Luca Bianchi",
+          "text": "Marked as resolved.",
+          "fromAmazon": false
+        }
+      ]
+    }
+  ],
+  "listings": [
+    {
+      "id": "L1",
+      "brand": "nordhaus",
+      "product": "Carbon steel wok 32 cm",
+      "updated": "2 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "live",
+        "IT": "issue",
+        "ES": "live",
+        "NL": "live"
+      },
+      "issues": {
+        "IT": "Missing required attribute: material composition"
+      }
+    },
+    {
+      "id": "L2",
+      "brand": "nordhaus",
+      "product": "Enamel roasting tin 38 cm",
+      "updated": "5 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "processing",
+        "IT": "draft",
+        "ES": "draft"
+      },
+      "issues": {}
+    },
+    {
+      "id": "L3",
+      "brand": "alba",
+      "product": "Bakuchiol night serum 30 ml",
+      "updated": "Yesterday",
+      "status": {
+        "DE": "live",
+        "FR": "live",
+        "IT": "live",
+        "ES": "issue",
+        "NL": "live",
+        "SE": "live",
+        "PL": "processing"
+      },
+      "issues": {
+        "ES": "Ingredient review: provide the full INCI list"
+      }
+    },
+    {
+      "id": "L4",
+      "brand": "veloria",
+      "product": "Grip socks (2 pairs)",
+      "updated": "3 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "live"
+      },
+      "issues": {}
+    }
+  ]
+}

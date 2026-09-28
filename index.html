@@ -48,6 +48,7 @@ a{color:var(--info)}
 .nav svg{width:18px;height:18px;flex:none;opacity:.85}
 .nav .count{margin-left:auto;background:var(--signal);color:var(--signalink);font-size:12px;font-weight:700;border-radius:10px;padding:0 7px;line-height:19px}
 .nav .count.dim{background:#33404D;color:var(--railink)}
+.resetbtn{all:unset;cursor:pointer;color:var(--railink);text-decoration:underline;text-underline-offset:2px}.resetbtn:focus-visible{outline:2px solid var(--signal)}
 .railnote{margin-top:auto;color:var(--railmuted);font-size:12.5px;padding:18px 10px 0;border-top:1px solid #2A3643}
 .main{overflow:auto;min-width:0}
 .page{max-width:1280px;margin:0 auto;padding:28px 32px 64px}
@@ -210,6 +211,7 @@ ol.steps li{margin-bottom:5px}
 .overlay{position:fixed;inset:0;background:rgba(10,14,18,.5);display:grid;place-items:center;padding:20px;z-index:20}
 .modal{background:var(--surface);border-radius:10px;max-width:620px;width:100%;max-height:85vh;overflow:auto;padding:22px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.databar{position:relative;z-index:40;background:var(--badbg);color:var(--ink);border-bottom:1px solid var(--bad);padding:12px 18px;font-size:14px}.databar b{color:var(--bad)}.databar ul{margin:6px 0 8px;padding-left:20px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:1100px){.grid2,.split,.gen{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:820px){
@@ -217,7 +219,9 @@ ol.steps li{margin-bottom:5px}
   .app{display:block;height:auto}
   .rail{position:sticky;top:0;z-index:10;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));overflow:visible}
   .mark{padding:0 6px 0 2px}
-  .rail label.small,.railnote{display:none}
+  .rail label.small{display:none}
+  .railnote{order:9;width:100%;margin:0;padding:6px 2px 0;border-top:0;font-size:12px}
+  .railnote>span{display:none}
   .rail select{width:auto;flex:1;margin:0;min-width:140px}
   .nav{flex-direction:row;overflow-x:auto;width:100%;gap:4px}
   .nav button{padding:7px 10px;white-space:nowrap}
@@ -239,13 +243,552 @@ ol.steps li{margin-bottom:5px}
     <label class="small" for="brandSel">Brand partner</label>
     <select id="brandSel" aria-label="Brand partner"></select>
     <nav class="nav" id="nav" aria-label="Tools"></nav>
-    <div class="railnote">Prototype with sample data. Nothing here is connected to Amazon yet.</div>
+    <div class="railnote"><span>Prototype with sample data. Nothing here is connected to Amazon yet.</span><div id="saveNote" style="margin-top:10px"></div></div>
   </aside>
   <main class="main" id="main"></main>
 </div>
 <div id="layer"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+<script type="application/json" id="fallback-data">
+{
+  "_readme": "Sample data for the Paravostra prototype. Edit, commit, and GitHub Pages redeploys in about a minute. Brand ids, SKUs and marketplace codes must match across sections. Marketplace codes: DE, UK, FR, IT, ES, NL, SE, PL, BE, IE, TR. Alert severity: critical, high, medium, low. Case status: Draft, Awaiting Amazon, Needs reply, Resolved. Listing status: live, issue, processing, draft.",
+  "team": [
+    "Ola Nowak",
+    "Marek Zieliński",
+    "Sophie Laurent",
+    "Luca Bianchi"
+  ],
+  "brands": [
+    {
+      "id": "nordhaus",
+      "name": "Nordhaus Kitchen",
+      "weeklyRevenueEUR": 92000,
+      "averagePriceEUR": 41,
+      "products": [
+        {
+          "sku": "NH-SK28",
+          "name": "Cast iron skillet 28 cm",
+          "priceEUR": 44.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "NH-DO52",
+          "name": "Enamelled Dutch oven 5.2 L",
+          "priceEUR": 89,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "NH-WK32",
+          "name": "Carbon steel wok 32 cm",
+          "priceEUR": 39.9,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "NH-RT38",
+          "name": "Enamel roasting tin 38 cm",
+          "priceEUR": 34.5,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "NH-KN20",
+          "name": "Chef's knife 20 cm",
+          "priceEUR": 59,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    },
+    {
+      "id": "alba",
+      "name": "Alba Botanics",
+      "weeklyRevenueEUR": 61000,
+      "averagePriceEUR": 22,
+      "products": [
+        {
+          "sku": "AB-RH30",
+          "name": "Rosehip face oil 30 ml",
+          "priceEUR": 24.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "AB-LV250",
+          "name": "Lavender body wash 250 ml",
+          "priceEUR": 9.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "AB-SH75",
+          "name": "Shea hand cream 75 ml",
+          "priceEUR": 12.5,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "AB-BK30",
+          "name": "Bakuchiol night serum 30 ml",
+          "priceEUR": 32,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "AB-SS300",
+          "name": "Sea salt body scrub 300 g",
+          "priceEUR": 18,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    },
+    {
+      "id": "veloria",
+      "name": "Veloria Sport",
+      "weeklyRevenueEUR": 48000,
+      "averagePriceEUR": 29,
+      "products": [
+        {
+          "sku": "VS-RB5",
+          "name": "Resistance band set (5)",
+          "priceEUR": 24.9,
+          "salesShare": 0.34,
+          "leadTimeWeeks": 6,
+          "casePack": 6
+        },
+        {
+          "sku": "VS-YM6",
+          "name": "Yoga mat 6 mm",
+          "priceEUR": 34.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 8,
+          "casePack": 4
+        },
+        {
+          "sku": "VS-FR45",
+          "name": "Foam roller 45 cm",
+          "priceEUR": 27.5,
+          "salesShare": 0.22,
+          "leadTimeWeeks": 6,
+          "casePack": 8
+        },
+        {
+          "sku": "VS-RB1",
+          "name": "Running belt",
+          "priceEUR": 19.9,
+          "salesShare": 0.16,
+          "leadTimeWeeks": 5,
+          "casePack": 6
+        },
+        {
+          "sku": "VS-GS2",
+          "name": "Grip socks (2 pairs)",
+          "priceEUR": 14.9,
+          "salesShare": 0.14,
+          "leadTimeWeeks": 10,
+          "casePack": 12
+        }
+      ]
+    }
+  ],
+  "alerts": [
+    {
+      "id": "A1",
+      "brand": "alba",
+      "severity": "critical",
+      "type": "Listing suppressed",
+      "sku": "AB-RH30",
+      "marketplace": "DE",
+      "when": "38 min ago",
+      "impact": "About €410 a day in lost sales",
+      "title": "Rosehip face oil 30 ml is suppressed in Germany",
+      "detail": "Amazon removed the offer from search after a dangerous goods review flagged a missing safety data sheet (SDS). The listing stays suppressed until the SDS is uploaded and approved.",
+      "steps": [
+        "Upload the supplier SDS under dangerous goods classification in Seller Central.",
+        "Open a case to ask for an expedited review if the suppression lasts more than 48 hours."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A2",
+      "brand": "nordhaus",
+      "severity": "high",
+      "type": "Buy Box lost",
+      "sku": "NH-SK28",
+      "marketplace": "FR",
+      "when": "1 h ago",
+      "impact": "About €260 a day in lost sales",
+      "title": "Buy Box lost on Cast iron skillet 28 cm in France",
+      "detail": "Another seller offers the same ASIN at €39.90 with FBA, 11% below your €44.90. You held the Buy Box 96% of the time over the last 30 days.",
+      "steps": [
+        "Check whether the other seller is authorised by Nordhaus.",
+        "If not, report them through Brand Registry as a possible counterfeit or unauthorised seller.",
+        "If they are, consider a temporary price match within the agreed minimum price."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A3",
+      "brand": "nordhaus",
+      "severity": "high",
+      "type": "Low stock",
+      "sku": "NH-DO52",
+      "marketplace": "DE",
+      "when": "3 h ago",
+      "impact": "Stockout in about 9 days",
+      "title": "Enamelled Dutch oven 5.2 L runs out in about 9 days in Germany",
+      "detail": "At the current sales rate, available FBA stock lasts 9 days. The supplier lead time is 8 weeks, so a stockout is likely before new stock arrives.",
+      "steps": [
+        "Review the restock recommendation for this product.",
+        "Consider moving units from the UK or France to Germany in the meantime."
+      ],
+      "source": "FBA Inventory API",
+      "detectedByApi": true,
+      "canOpenCase": false,
+      "openTool": "overview"
+    },
+    {
+      "id": "A4",
+      "brand": "veloria",
+      "severity": "medium",
+      "type": "Stranded inventory",
+      "sku": "VS-YM6",
+      "marketplace": "IT",
+      "when": "6 h ago",
+      "impact": "64 units cannot be sold",
+      "title": "64 units of Yoga mat 6 mm are stranded in Italy",
+      "detail": "The units are in an Amazon warehouse but have no active offer, because the Italian listing closed after a price update failed validation.",
+      "steps": [
+        "Relist the offer with a valid price.",
+        "If relisting fails, create a removal order or open a case."
+      ],
+      "source": "Reports API, daily",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A5",
+      "brand": "veloria",
+      "severity": "critical",
+      "type": "Account health",
+      "sku": "VS-RB5",
+      "marketplace": "UK",
+      "when": "Today, 08:12",
+      "impact": "Policy warning on the account",
+      "title": "Trademark complaint on Resistance band set (5) in the UK",
+      "detail": "A rights owner filed a trademark complaint against the listing. Amazon removed the listing and added a policy warning to the account health dashboard.",
+      "steps": [
+        "Confirm with Veloria that the brand name and images are their own.",
+        "Submit an appeal with the trademark registration and supplier invoice.",
+        "Contact the rights owner if the complaint looks like a mistake."
+      ],
+      "source": "Seller Central, logged by hand. Account health warnings are not available through the SP-API.",
+      "detectedByApi": false,
+      "canOpenCase": true
+    },
+    {
+      "id": "A6",
+      "brand": "nordhaus",
+      "severity": "medium",
+      "type": "Inbound discrepancy",
+      "sku": "NH-WK32",
+      "marketplace": "DE",
+      "when": "Yesterday",
+      "impact": "24 units, about €960 at retail",
+      "title": "Shipment FBA18K2QW7 arrived 24 units short",
+      "detail": "Nordhaus shipped 240 units of Carbon steel wok 32 cm to DTM2. Amazon received 216 and closed the shipment.",
+      "steps": [
+        "Collect the proof of delivery and the packing list.",
+        "Open a reconciliation case for the missing units."
+      ],
+      "source": "Fulfillment Inbound API",
+      "detectedByApi": true,
+      "canOpenCase": true,
+      "shipmentId": "FBA18K2QW7",
+      "units": 24
+    },
+    {
+      "id": "A7",
+      "brand": "alba",
+      "severity": "low",
+      "type": "Price anomaly",
+      "sku": "AB-LV250",
+      "marketplace": "ES",
+      "when": "Yesterday",
+      "impact": "11 units sold below minimum price",
+      "title": "Lavender body wash 250 ml is priced at €2.49 in Spain",
+      "detail": "The price fell from €9.90 to €2.49 after an automated repricer update. Eleven units sold at the lower price.",
+      "steps": [
+        "Restore the price to €9.90.",
+        "Check the repricer rule for Spain."
+      ],
+      "source": "Product Pricing API",
+      "detectedByApi": true,
+      "canOpenCase": false
+    },
+    {
+      "id": "A8",
+      "brand": "nordhaus",
+      "severity": "medium",
+      "type": "New seller on listing",
+      "sku": "NH-WK32",
+      "marketplace": "PL",
+      "when": "2 days ago",
+      "impact": "Possible unauthorised seller",
+      "title": "An unknown seller joined Carbon steel wok 32 cm in Poland",
+      "detail": "A seller called HomeStar24 offers the ASIN at 149 zł (about €35), shipped by the merchant. Nordhaus has no reseller agreement with them.",
+      "steps": [
+        "Make a test purchase to check whether the product is genuine.",
+        "If it is not, report the seller through Brand Registry."
+      ],
+      "source": "Notifications API",
+      "detectedByApi": true,
+      "canOpenCase": true
+    },
+    {
+      "id": "A9",
+      "brand": "alba",
+      "severity": "low",
+      "type": "Listing quality",
+      "sku": "AB-SH75",
+      "marketplace": "SE",
+      "when": "3 days ago",
+      "impact": "Lower search relevance in Sweden",
+      "title": "Shea hand cream 75 ml has no Swedish bullet points",
+      "detail": "The Swedish listing shows the English bullet points, which lowers relevance in Swedish search.",
+      "steps": [
+        "Generate Swedish content in Listings.",
+        "Review and publish it."
+      ],
+      "source": "Listings Items API",
+      "detectedByApi": true,
+      "canOpenCase": false,
+      "openTool": "listings"
+    },
+    {
+      "id": "A10",
+      "brand": "veloria",
+      "severity": "high",
+      "type": "Lost inventory",
+      "sku": "VS-FR45",
+      "marketplace": "FR",
+      "when": "4 days ago",
+      "impact": "12 units, about €330 at retail",
+      "title": "12 units of Foam roller 45 cm were lost in a French warehouse",
+      "detail": "The inventory ledger shows 12 units marked as lost at ORY4, with no automatic reimbursement after 30 days.",
+      "steps": [
+        "Check the reimbursements report.",
+        "Open a case to request reimbursement."
+      ],
+      "source": "Reports API, inventory ledger",
+      "detectedByApi": true,
+      "canOpenCase": true,
+      "units": 12
+    }
+  ],
+  "cases": [
+    {
+      "id": "K1",
+      "brand": "nordhaus",
+      "marketplace": "DE",
+      "sku": "NH-SK28",
+      "subject": "Reimbursement for 18 units lost in warehouse",
+      "status": "Awaiting Amazon",
+      "caseId": "15738204931",
+      "opened": "3 days ago",
+      "followUpInHours": 22,
+      "owner": "Ola Nowak",
+      "history": [
+        {
+          "when": "3 days ago",
+          "who": "Ola Nowak",
+          "text": "Opened the case in Seller Central with the inventory ledger extract.",
+          "fromAmazon": false
+        },
+        {
+          "when": "2 days ago",
+          "who": "Amazon",
+          "text": "Automatic reply: the case is under investigation, with an answer within 3 business days.",
+          "fromAmazon": true
+        }
+      ]
+    },
+    {
+      "id": "K2",
+      "brand": "alba",
+      "marketplace": "FR",
+      "sku": "AB-BK30",
+      "subject": "Listing suppressed: safety data sheet review",
+      "status": "Needs reply",
+      "caseId": "15720991177",
+      "opened": "6 days ago",
+      "followUpInHours": -6,
+      "owner": "Sophie Laurent",
+      "history": [
+        {
+          "when": "6 days ago",
+          "who": "Sophie Laurent",
+          "text": "Opened the case with the English SDS attached.",
+          "fromAmazon": false
+        },
+        {
+          "when": "Yesterday",
+          "who": "Amazon",
+          "text": "Please provide a safety data sheet in French covering sections 1 to 16. Documents in English cannot be accepted for this marketplace.",
+          "fromAmazon": true
+        }
+      ],
+      "amazonAsks": "A safety data sheet in French, sections 1 to 16.",
+      "suggestedNextStep": "Ask Alba Botanics for the French SDS, then reply on the case with it attached."
+    },
+    {
+      "id": "K3",
+      "brand": "nordhaus",
+      "marketplace": "UK",
+      "sku": "NH-RT38",
+      "subject": "Wrong dimensions causing a higher FBA fee",
+      "status": "Awaiting Amazon",
+      "caseId": "15689420058",
+      "opened": "9 days ago",
+      "followUpInHours": -26,
+      "owner": "Marek Zieliński",
+      "history": [
+        {
+          "when": "9 days ago",
+          "who": "Marek Zieliński",
+          "text": "Opened the case with the carton measurements and photos.",
+          "fromAmazon": false
+        },
+        {
+          "when": "7 days ago",
+          "who": "Amazon",
+          "text": "We have asked the fulfilment centre to remeasure the item.",
+          "fromAmazon": true
+        },
+        {
+          "when": "4 days ago",
+          "who": "Marek Zieliński",
+          "text": "Followed up: no update received.",
+          "fromAmazon": false
+        }
+      ]
+    },
+    {
+      "id": "K4",
+      "brand": "veloria",
+      "marketplace": "DE",
+      "sku": null,
+      "subject": "Brand Registry: add a new brand representative",
+      "status": "Resolved",
+      "caseId": "15601143820",
+      "opened": "3 weeks ago",
+      "followUpInHours": null,
+      "owner": "Luca Bianchi",
+      "history": [
+        {
+          "when": "3 weeks ago",
+          "who": "Luca Bianchi",
+          "text": "Opened the case with the authorisation letter.",
+          "fromAmazon": false
+        },
+        {
+          "when": "5 days ago",
+          "who": "Amazon",
+          "text": "The new representative has been added to the brand.",
+          "fromAmazon": true
+        },
+        {
+          "when": "5 days ago",
+          "who": "Luca Bianchi",
+          "text": "Marked as resolved.",
+          "fromAmazon": false
+        }
+      ]
+    }
+  ],
+  "listings": [
+    {
+      "id": "L1",
+      "brand": "nordhaus",
+      "product": "Carbon steel wok 32 cm",
+      "updated": "2 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "live",
+        "IT": "issue",
+        "ES": "live",
+        "NL": "live"
+      },
+      "issues": {
+        "IT": "Missing required attribute: material composition"
+      }
+    },
+    {
+      "id": "L2",
+      "brand": "nordhaus",
+      "product": "Enamel roasting tin 38 cm",
+      "updated": "5 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "processing",
+        "IT": "draft",
+        "ES": "draft"
+      },
+      "issues": {}
+    },
+    {
+      "id": "L3",
+      "brand": "alba",
+      "product": "Bakuchiol night serum 30 ml",
+      "updated": "Yesterday",
+      "status": {
+        "DE": "live",
+        "FR": "live",
+        "IT": "live",
+        "ES": "issue",
+        "NL": "live",
+        "SE": "live",
+        "PL": "processing"
+      },
+      "issues": {
+        "ES": "Ingredient review: provide the full INCI list"
+      }
+    },
+    {
+      "id": "L4",
+      "brand": "veloria",
+      "product": "Grip socks (2 pairs)",
+      "updated": "3 days ago",
+      "status": {
+        "DE": "live",
+        "UK": "live",
+        "FR": "live"
+      },
+      "issues": {}
+    }
+  ]
+}
+</script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -258,17 +801,13 @@ const pct=n=>(n>=0?'+':'')+n.toFixed(1)+'%';
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3600)}
 
 /* ---------- sample data ---------- */
-const BRANDS=[{id:'nordhaus',name:'Nordhaus Kitchen',base:92000,price:41},{id:'alba',name:'Alba Botanics',base:61000,price:22},{id:'veloria',name:'Veloria Sport',base:48000,price:29}];
+let BRANDS=[],SKUS={},TEAM=[],DATA_WARN=[];
 const MKTS=[['DE','Germany','de',.30],['UK','United Kingdom','en',.19],['FR','France','fr',.14],['IT','Italy','it',.10],['ES','Spain','es',.09],['NL','Netherlands','nl',.05],['SE','Sweden','sv',.03],['PL','Poland','pl',.035],['BE','Belgium','fr',.02],['IE','Ireland','en',.015],['TR','Türkiye','tr',.02]].map(([c,n,l,w])=>({c,n,l,w}));
 const mk=c=>MKTS.find(m=>m.c===c);
 const LANGS={en:'English',de:'German',fr:'French',it:'Italian',es:'Spanish',nl:'Dutch',sv:'Swedish',pl:'Polish',tr:'Turkish'};
-const SKUS={
- nordhaus:[['NH-SK28','Cast iron skillet 28 cm',44.9],['NH-DO52','Enamelled Dutch oven 5.2 L',89],['NH-WK32','Carbon steel wok 32 cm',39.9],['NH-RT38','Enamel roasting tin 38 cm',34.5],['NH-KN20',"Chef's knife 20 cm",59]],
- alba:[['AB-RH30','Rosehip face oil 30 ml',24.9],['AB-LV250','Lavender body wash 250 ml',9.9],['AB-SH75','Shea hand cream 75 ml',12.5],['AB-BK30','Bakuchiol night serum 30 ml',32],['AB-SS300','Sea salt body scrub 300 g',18]],
- veloria:[['VS-RB5','Resistance band set (5)',24.9],['VS-YM6','Yoga mat 6 mm',34.9],['VS-FR45','Foam roller 45 cm',27.5],['VS-RB1','Running belt',19.9],['VS-GS2','Grip socks (2 pairs)',14.9]]};
-const skuInfo=sku=>{for(const b in SKUS)for(const s of SKUS[b])if(s[0]===sku)return{brand:b,sku,name:s[1],price:s[2]}};
+const skuInfo=sku=>{for(const b in SKUS)for(const s of SKUS[b])if(s.sku===sku)return{brand:b,...s};return{brand:null,sku,name:sku,price:0}};
 function asin(sku){const r=rng('asin'+sku),ch='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';let s='B0';for(let i=0;i<8;i++)s+=ch[Math.floor(r()*ch.length)];return s}
-const TEAM=['Ola Nowak','Marek Zieliński','Sophie Laurent','Luca Bianchi'];
+
 const brandName=id=>id==='all'?'All brand partners':BRANDS.find(b=>b.id===id).name;
 const brandsIn=()=>S.brand==='all'?BRANDS:BRANDS.filter(b=>b.id===S.brand);
 
@@ -294,22 +833,22 @@ function series(){const bs=brandsIn();const labels=PER[S.period].labels;const ou
  bs.forEach(b=>{const s=seriesFor(b);s.cur.forEach((v,i)=>out.cur[i]+=v);s.prev.forEach((v,i)=>out.prev[i]+=v);out.units+=s.cur[s.cur.length-1]/b.price});return out}
 
 /* ---------- restock ---------- */
-const SHARE=[.34,.14,.22,.16,.14],LEAD=[6,8,6,5,10],PACK=[6,4,8,6,12];
+
 function restockRows(){
  const rows=[];
- brandsIn().forEach(b=>{const r=rng('rs'+b.id);SKUS[b.id].forEach(([sku,name,price],si)=>{['DE','UK','FR','IT','ES'].forEach(c=>{
-  const m=mk(c);const vel=Math.max(4,Math.round(b.base/b.price*m.w*SHARE[si]*(.8+r()*.4)));
+ brandsIn().forEach(b=>{const r=rng('rs'+b.id);SKUS[b.id].forEach(({sku,name,price,share,lead:LD,pack:PK})=>{['DE','UK','FR','IT','ES'].forEach(c=>{
+  const m=mk(c);const vel=Math.max(4,Math.round(b.base/b.price*m.w*share*(.8+r()*.4)));
   const avail=Math.round(vel*(.4+r()*9.5));const inbound=r()<.33?Math.round(vel*(1+r()*3)):0;
-  const lead=LEAD[si],safety=2,target=lead+safety,cover=(avail+inbound)/vel;
+  const lead=LD,safety=2,target=lead+safety,cover=(avail+inbound)/vel;
   const trend=Math.round(-8+r()*42),oos=cover<2?Math.round(1+r()*5):0,conf=r()>.3?'High':'Medium';
   if(S.mkt!=='all'&&S.mkt!==c)return;
   if(cover>=target)return;
-  const pack=PACK[si];const rec=Math.ceil(Math.max(0,(target+4)*vel*(1+Math.max(trend,0)/200)-avail-inbound)/pack)*pack;
+  const pack=PK;const rec=Math.ceil(Math.max(0,(target+4)*vel*(1+Math.max(trend,0)/200)-avail-inbound)/pack)*pack;
   rows.push({key:sku+'-'+c,brand:b.id,sku,name,price,c,vel,avail,inbound,lead,target,cover,rec,pack,trend,oos,conf,cost:price*.38});
  })})});
  return rows.sort((a,b)=>a.cover-b.cover).slice(0,14);
 }
-const dec=row=>S.dec[row.key]||(S.dec[row.key]={st:'pending',qty:row.rec});
+const dec=row=>S.dec[row.key]||(S.dec[row.key]={st:'pending',qty:row.rec,rec:row.rec});
 function reason(x){
  const m=mk(x.c);const p=[];
  p.push(`Stock covers ${x.cover.toFixed(1)} weeks, but a reorder from the supplier takes ${x.lead} weeks and we keep 2 weeks of safety stock.`);
@@ -321,36 +860,19 @@ function reason(x){
 }
 
 /* ---------- alerts ---------- */
-const ALERTS=[
- {id:'A1',brand:'alba',sev:'critical',type:'Listing suppressed',sku:'AB-RH30',mkt:'DE',ago:'38 min ago',impact:'About €410 a day in lost sales',source:'Notifications API',api:true,title:'Rosehip face oil 30 ml is suppressed in Germany',detail:'Amazon removed the offer from search after a dangerous goods review flagged a missing safety data sheet (SDS). The listing stays suppressed until the SDS is uploaded and approved.',steps:['Upload the supplier SDS under dangerous goods classification in Seller Central.','Open a case to ask for an expedited review if the suppression lasts more than 48 hours.'],canCase:true},
- {id:'A2',brand:'nordhaus',sev:'high',type:'Buy Box lost',sku:'NH-SK28',mkt:'FR',ago:'1 h ago',impact:'About €260 a day in lost sales',source:'Notifications API',api:true,title:'Buy Box lost on Cast iron skillet 28 cm in France',detail:'Another seller offers the same ASIN at €39.90 with FBA, 11% below your €44.90. You held the Buy Box 96% of the time over the last 30 days.',steps:['Check whether the other seller is authorised by Nordhaus.','If not, report them through Brand Registry as a possible counterfeit or unauthorised seller.','If they are, consider a temporary price match within the agreed minimum price.'],canCase:true},
- {id:'A3',brand:'nordhaus',sev:'high',type:'Low stock',sku:'NH-DO52',mkt:'DE',ago:'3 h ago',impact:'Stockout in about 9 days',source:'FBA Inventory API',api:true,title:'Enamelled Dutch oven 5.2 L runs out in about 9 days in Germany',detail:'At the current sales rate, available FBA stock lasts 9 days. The supplier lead time is 8 weeks, so a stockout is likely before new stock arrives.',steps:['Review the restock recommendation for this product.','Consider moving units from the UK or France to Germany in the meantime.'],canCase:false,link:'overview'},
- {id:'A4',brand:'veloria',sev:'medium',type:'Stranded inventory',sku:'VS-YM6',mkt:'IT',ago:'6 h ago',impact:'64 units cannot be sold',source:'Reports API, daily',api:true,title:'64 units of Yoga mat 6 mm are stranded in Italy',detail:'The units are in an Amazon warehouse but have no active offer, because the Italian listing closed after a price update failed validation.',steps:['Relist the offer with a valid price.','If relisting fails, create a removal order or open a case.'],canCase:true},
- {id:'A5',brand:'veloria',sev:'critical',type:'Account health',sku:'VS-RB5',mkt:'UK',ago:'Today, 08:12',impact:'Policy warning on the account',source:'Seller Central, logged by hand. Account health warnings are not available through the SP-API.',api:false,title:'Trademark complaint on Resistance band set (5) in the UK',detail:'A rights owner filed a trademark complaint against the listing. Amazon removed the listing and added a policy warning to the account health dashboard.',steps:['Confirm with Veloria that the brand name and images are their own.','Submit an appeal with the trademark registration and supplier invoice.','Contact the rights owner if the complaint looks like a mistake.'],canCase:true},
- {id:'A6',brand:'nordhaus',sev:'medium',type:'Inbound discrepancy',sku:'NH-WK32',mkt:'DE',ago:'Yesterday',impact:'24 units, about €960 at retail',source:'Fulfillment Inbound API',api:true,title:'Shipment FBA18K2QW7 arrived 24 units short',detail:'Nordhaus shipped 240 units of Carbon steel wok 32 cm to DTM2. Amazon received 216 and closed the shipment.',steps:['Collect the proof of delivery and the packing list.','Open a reconciliation case for the missing units.'],canCase:true,shipment:'FBA18K2QW7',units:24},
- {id:'A7',brand:'alba',sev:'low',type:'Price anomaly',sku:'AB-LV250',mkt:'ES',ago:'Yesterday',impact:'11 units sold below minimum price',source:'Product Pricing API',api:true,title:'Lavender body wash 250 ml is priced at €2.49 in Spain',detail:'The price fell from €9.90 to €2.49 after an automated repricer update. Eleven units sold at the lower price.',steps:['Restore the price to €9.90.','Check the repricer rule for Spain.'],canCase:false},
- {id:'A8',brand:'nordhaus',sev:'medium',type:'New seller on listing',sku:'NH-WK32',mkt:'PL',ago:'2 days ago',impact:'Possible unauthorised seller',source:'Notifications API',api:true,title:'An unknown seller joined Carbon steel wok 32 cm in Poland',detail:'A seller called HomeStar24 offers the ASIN at 149 zł (about €35), shipped by the merchant. Nordhaus has no reseller agreement with them.',steps:['Make a test purchase to check whether the product is genuine.','If it is not, report the seller through Brand Registry.'],canCase:true},
- {id:'A9',brand:'alba',sev:'low',type:'Listing quality',sku:'AB-SH75',mkt:'SE',ago:'3 days ago',impact:'Lower search relevance in Sweden',source:'Listings Items API',api:true,title:'Shea hand cream 75 ml has no Swedish bullet points',detail:'The Swedish listing shows the English bullet points, which lowers relevance in Swedish search.',steps:['Generate Swedish content in Listings.','Review and publish it.'],canCase:false,link:'listings'},
- {id:'A10',brand:'veloria',sev:'high',type:'Lost inventory',sku:'VS-FR45',mkt:'FR',ago:'4 days ago',impact:'12 units, about €330 at retail',source:'Reports API, inventory ledger',api:true,title:'12 units of Foam roller 45 cm were lost in a French warehouse',detail:'The inventory ledger shows 12 units marked as lost at ORY4, with no automatic reimbursement after 30 days.',steps:['Check the reimbursements report.','Open a case to request reimbursement.'],canCase:true,units:12}
-].map(a=>({...a,status:'open',assignee:null}));
+let ALERTS=[];
 const SEVS=['critical','high','medium','low'];
 
 /* ---------- cases ---------- */
-const CASES=[
- {id:'K1',brand:'nordhaus',mkt:'DE',sku:'NH-SK28',subject:'Reimbursement for 18 units lost in warehouse',status:'Awaiting Amazon',caseId:'15738204931',opened:'3 days ago',due:22,owner:'Ola Nowak',tl:[['3 days ago','Ola Nowak','Opened the case in Seller Central with the inventory ledger extract.'],['2 days ago','Amazon','Automatic reply: the case is under investigation, with an answer within 3 business days.',1]]},
- {id:'K2',brand:'alba',mkt:'FR',sku:'AB-BK30',subject:'Listing suppressed: safety data sheet review',status:'Needs reply',caseId:'15720991177',opened:'6 days ago',due:-6,owner:'Sophie Laurent',tl:[['6 days ago','Sophie Laurent','Opened the case with the English SDS attached.'],['Yesterday','Amazon','Please provide a safety data sheet in French covering sections 1 to 16. Documents in English cannot be accepted for this marketplace.',1]],sum:{ask:'A safety data sheet in French, sections 1 to 16.',next:'Ask Alba Botanics for the French SDS, then reply on the case with it attached.'}},
- {id:'K3',brand:'nordhaus',mkt:'UK',sku:'NH-RT38',subject:'Wrong dimensions causing a higher FBA fee',status:'Awaiting Amazon',caseId:'15689420058',opened:'9 days ago',due:-26,owner:'Marek Zieliński',tl:[['9 days ago','Marek Zieliński','Opened the case with the carton measurements and photos.'],['7 days ago','Amazon','We have asked the fulfilment centre to remeasure the item.',1],['4 days ago','Marek Zieliński','Followed up: no update received.']]},
- {id:'K4',brand:'veloria',mkt:'DE',sku:null,subject:'Brand Registry: add a new brand representative',status:'Resolved',caseId:'15601143820',opened:'3 weeks ago',due:null,owner:'Luca Bianchi',tl:[['3 weeks ago','Luca Bianchi','Opened the case with the authorisation letter.'],['5 days ago','Amazon','The new representative has been added to the brand.',1],['5 days ago','Luca Bianchi','Marked as resolved.']]}
-];
-let caseSeq=5;
+let CASES=[];
 function caseDraft(a){
  const s=skuInfo(a.sku),m=mk(a.mkt),b=brandName(a.brand);
  const facts=[`ASIN: ${asin(a.sku)}`,`SKU: ${a.sku}`,`Marketplace: amazon.${a.mkt==='UK'?'co.uk':a.mkt==='BE'?'com.be':a.mkt==='TR'?'com.tr':a.mkt.toLowerCase()}`];
  let subj,intro,ask,att;
  switch(a.type){
   case 'Listing suppressed':subj=`Suppressed listing: ${s.name} (${a.mkt}), SDS review`;intro=`our listing for ${s.name} was suppressed in ${m.n} after the dangerous goods review requested a safety data sheet.`;ask=`We have now uploaded the SDS. Could you please expedite the review and reinstate the listing? It is one of our best-selling products in this marketplace.`;att=['Safety data sheet (sections 1 to 16)','Screenshot of the suppression notice'];break;
-  case 'Inbound discrepancy':subj=`Shipment ${a.shipment}: ${a.units} units not received`;intro=`shipment ${a.shipment} to DTM2 was closed with ${a.units} fewer units of ${s.name} than we sent (240 shipped, 216 received).`;ask=`Please investigate the discrepancy and either locate the units or reimburse them.`;att=['Proof of delivery signed by the carrier','Packing list with carton contents'];facts.push(`Shipment ID: ${a.shipment}`);break;
-  case 'Lost inventory':subj=`Reimbursement request: ${a.units} lost units of ${s.name}`;intro=`the inventory ledger shows ${a.units} units of ${s.name} marked as lost at ORY4 more than 30 days ago, and no reimbursement has been issued.`;ask=`Please reimburse the lost units or confirm that they have been found.`;att=['Inventory ledger extract'];break;
+  case 'Inbound discrepancy':subj=`Shipment ${a.shipment}: ${a.units} units not received`;intro=`shipment ${a.shipment} was closed with ${a.units} fewer units of ${s.name} than we sent.`;ask=`Please investigate the discrepancy and either locate the units or reimburse them.`;att=['Proof of delivery signed by the carrier','Packing list with carton contents'];facts.push(`Shipment ID: ${a.shipment}`);break;
+  case 'Lost inventory':subj=`Reimbursement request: ${a.units} lost units of ${s.name}`;intro=`the inventory ledger shows ${a.units} units of ${s.name} marked as lost in the fulfilment centre more than 30 days ago, and no reimbursement has been issued.`;ask=`Please reimburse the lost units or confirm that they have been found.`;att=['Inventory ledger extract'];break;
   case 'Account health':subj=`Appeal: trademark complaint on ${s.name}`;intro=`we received a trademark complaint on ${s.name} in ${m.n}. The brand and all images on the listing belong to ${b}, which owns the registered trademark.`;ask=`Please review the attached evidence, reinstate the listing and remove the policy warning from our account.`;att=['Trademark registration certificate','Invoice from the manufacturer','Letter of authorisation from the brand owner'];break;
   case 'Buy Box lost':case 'New seller on listing':subj=`Possible unauthorised seller on ${s.name} (${a.mkt})`;intro=`a seller we have not authorised is offering ${s.name} in ${m.n}. ${b} does not supply this seller, and we are concerned the product may not be genuine.`;ask=`Could you please review this seller's offer and the authenticity of their inventory?`;att=['Brand Registry details','Test purchase photos (to follow)'];break;
   default:subj=`${a.type}: ${s.name} (${a.mkt})`;intro=`${a.detail.charAt(0).toLowerCase()+a.detail.slice(1)}`;ask=`Please help us resolve this so the units can be sold again.`;att=['Screenshots of the issue'];
@@ -361,12 +883,7 @@ function caseDraft(a){
 function followUp(k){const s=k.sku?skuInfo(k.sku):null;return{subject:`Follow-up on case ${k.caseId}: ${k.subject}`,body:`Hello,\n\nI am following up on case ${k.caseId}, opened ${k.opened}${s?`, regarding ${s.name} (ASIN ${asin(k.sku)})`:''}.\n\nWe have not received an update since the last reply. Could you please share the current status and the expected time to resolution? If anything else is needed from our side, let us know and we will send it the same day.\n\nThank you,\nParavostra operations team`}}
 
 /* ---------- listings ---------- */
-const LISTINGS=[
- {id:'L1',brand:'nordhaus',name:'Carbon steel wok 32 cm',updated:'2 days ago',st:{DE:'live',UK:'live',FR:'live',IT:'issue',ES:'live',NL:'live'},issue:{IT:'Missing required attribute: material composition'}},
- {id:'L2',brand:'nordhaus',name:'Enamel roasting tin 38 cm',updated:'5 days ago',st:{DE:'live',UK:'live',FR:'processing',IT:'draft',ES:'draft'},issue:{}},
- {id:'L3',brand:'alba',name:'Bakuchiol night serum 30 ml',updated:'Yesterday',st:{DE:'live',FR:'live',IT:'live',ES:'issue',NL:'live',SE:'live',PL:'processing'},issue:{ES:'Ingredient review: provide the full INCI list'}},
- {id:'L4',brand:'veloria',name:'Grip socks (2 pairs)',updated:'3 days ago',st:{DE:'live',UK:'live',FR:'live'},issue:{}}
-];
+let LISTINGS=[];
 const CONTENT={
 en:{t:"Nordhaus Cast Iron Skillet 28 cm – Pre-Seasoned Frying Pan for Induction, Gas and Oven, with Pour Spouts and Helper Handle",b:["EVEN HEAT, BETTER SEARING – Thick cast iron holds and spreads heat evenly, so steaks sear and vegetables brown without hot spots.","READY TO COOK – Pre-seasoned with vegetable oil, so you can start cooking straight away. The natural non-stick surface improves with every use.","WORKS ON EVERY HOB – Suitable for induction, gas, electric and ceramic hobs, and oven safe up to 260 °C for baking and roasting.","DESIGNED FOR REAL KITCHENS – Two pour spouts for sauces and fat, plus a helper handle for a secure grip when lifting the 2.9 kg pan.","BUILT TO LAST – Solid one-piece cast iron with no coating to wear off. Hand wash, dry and oil lightly to keep it in top condition."],d:"The Nordhaus 28 cm cast iron skillet is made for everyday cooking and weekend projects alike. Its heavy base holds heat for a deep sear, it moves from hob to oven without a second pan, and it comes pre-seasoned so it is ready from day one. Care is simple: hand wash, dry thoroughly and wipe with a little oil.",k:['cast iron skillet','induction']},
 de:{t:"Nordhaus Gusseisenpfanne 28 cm – Vorgeölte Bratpfanne für Induktion, Gas und Backofen, mit Ausgießern und Gegengriff",b:["GLEICHMÄSSIGE HITZE – Dickes Gusseisen speichert und verteilt die Wärme gleichmäßig, für kräftige Röstaromen ohne Hotspots.","SOFORT EINSATZBEREIT – Mit Pflanzenöl vorgeölt, damit Sie direkt loslegen können. Die natürliche Antihaftwirkung verbessert sich mit jedem Gebrauch.","FÜR ALLE HERDARTEN – Geeignet für Induktion, Gas, Elektro und Ceran sowie backofenfest bis 260 °C.","DURCHDACHTES DESIGN – Zwei Ausgießer für Saucen und Fett sowie ein Gegengriff für sicheren Halt beim Anheben der 2,9 kg schweren Pfanne.","LANGLEBIG – Massives Gusseisen aus einem Stück, ohne Beschichtung, die sich abnutzen kann. Von Hand spülen, trocknen und leicht einölen."],d:"Die Nordhaus Gusseisenpfanne mit 28 cm Durchmesser ist für den Alltag ebenso gemacht wie für ausgiebiges Kochen am Wochenende. Der schwere Boden hält die Hitze für scharfes Anbraten, die Pfanne wandert ohne Umfüllen vom Herd in den Ofen und ist bereits vorgeölt. Die Pflege ist einfach: von Hand spülen, gründlich trocknen und mit etwas Öl einreiben.",k:['gusseisenpfanne','induktion']},
@@ -411,7 +928,7 @@ function renderNav(){
  const items=[['overview','Sales and restock',''],['listings','Listings',''],['alerts','Alerts',openA?`<span class="count">${openA}</span>`:''],['cases','Support cases',needC?`<span class="count">${needC}</span>`:'']];
  $('#nav').innerHTML=items.map(([id,l,c])=>`<button data-act="go" data-v="${id}" ${S.view===id?'aria-current="page"':''}>${IC[id]}<span>${l}</span>${c}</button>`).join('');
 }
-function render(){renderNav();const v={overview:vOverview,listings:vListings,alerts:vAlerts,cases:vCases}[S.view];$('#main').innerHTML=`<div class="page">${v()}</div>`;renderModal();if(S.view==='overview')bindChart()}
+function render(){renderNav();const v={overview:vOverview,listings:vListings,alerts:vAlerts,cases:vCases}[S.view];$('#main').innerHTML=`<div class="page">${v()}</div>`;renderModal();if(S.view==='overview')bindChart();scheduleSave()}
 function mktSelect(){return `<select class="sel" data-in="mkt" aria-label="Marketplace"><option value="all">All 11 marketplaces</option>${MKTS.map(m=>`<option value="${m.c}" ${S.mkt===m.c?'selected':''}>${m.c}  ${m.n}</option>`).join('')}</select>`}
 
 /* ---------- overview ---------- */
@@ -636,14 +1153,14 @@ const A={
  publish:()=>{const w=S.wiz;w.pub={};w.mkts.forEach(c=>w.pub[c]='queued');render();
   w.mkts.forEach((c,i)=>{const t=i*300;setTimeout(()=>{w.pub[c]='submitted';S.wiz===w&&render()},300+t);setTimeout(()=>{w.pub[c]='processing';S.wiz===w&&render()},1300+t);setTimeout(()=>{w.pub[c]=(c==='TR'||c==='PL')?'issue':'live';S.wiz===w&&render()},2700+t+(c==='PL'?800:0))})},
  resubmit:(d,el)=>{const v=el.parentElement.querySelector('select').value;if(!v){toast('Choose the country of origin first.');return}const w=S.wiz;w.pub[d.v]='processing';w.coo=v;render();setTimeout(()=>{w.pub[d.v]='live';S.wiz===w&&render()},1600)},
- finishWiz:()=>{const w=S.wiz;const st={};w.mkts.forEach(c=>st[c]='live');LISTINGS.unshift({id:'L'+Date.now(),brand:'nordhaus',name:w.name,updated:'Just now',st,issue:{}});S.listSel=LISTINGS[0].id;S.wiz=null;if(S.brand!=='all'&&S.brand!=='nordhaus'){S.brand='all';$('#brandSel').value='all'}render();toast(`${w.name} is live in ${w.mkts.length} marketplaces.`)},
+ finishWiz:()=>{const w=S.wiz;const st={};w.mkts.forEach(c=>st[c]='live');LISTINGS.unshift({id:'L'+Date.now(),brand:(BRANDS.find(b=>b.id==='nordhaus')||BRANDS[0]).id,name:w.name,updated:'Just now',st,issue:{},mine:true});S.listSel=LISTINGS[0].id;S.wiz=null;if(S.brand!=='all'&&S.brand!=='nordhaus'){S.brand='all';$('#brandSel').value='all'}render();toast(`${w.name} is live in ${w.mkts.length} marketplaces.`)},
  astatus:d=>{S.af.status=d.v;S.selAlert=null;render()},
  asev:d=>{S.af.sev=d.v;S.selAlert=null;render()},
  selAlert:d=>{S.selAlert=d.v;render()},
  snooze:d=>{ALERTS.find(a=>a.id===d.v).status='snoozed';S.selAlert=null;render();toast('Snoozed for 24 hours.')},
  resolve:d=>{ALERTS.find(a=>a.id===d.v).status='resolved';S.selAlert=null;render();toast('Marked resolved.')},
  reopen:d=>{ALERTS.find(a=>a.id===d.v).status='open';S.af.status='open';render()},
- draftCase:d=>{const a=ALERTS.find(x=>x.id===d.v);const dr=caseDraft(a);const k={id:'K'+(caseSeq++),brand:a.brand,mkt:a.mkt,sku:a.sku,subject:dr.subject,status:'Draft',caseId:null,opened:'Not yet',due:null,owner:a.assignee||'Ola Nowak',tl:[['Just now','Paravostra Ops','Drafted from the alert: '+a.title]],draft:dr};CASES.unshift(k);S.selCase=k.id;S.view='cases';S.caseMode=null;render()},
+ draftCase:d=>{const a=ALERTS.find(x=>x.id===d.v);const dr=caseDraft(a);const k={mine:true,id:'K'+Date.now(),brand:a.brand,mkt:a.mkt,sku:a.sku,subject:dr.subject,status:'Draft',caseId:null,opened:'Not yet',due:null,owner:a.assignee||'Ola Nowak',tl:[['Just now','Paravostra Ops','Drafted from the alert: '+a.title]],draft:dr};CASES.unshift(k);S.selCase=k.id;S.view='cases';S.caseMode=null;render()},
  selCase:d=>{S.selCase=d.v;S.caseMode=null;render()},
  copyDraft:()=>{const k=CASES.find(x=>x.id===S.selCase);const t=k.draft.subject+'\n\n'+k.draft.body;try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Paste it into the case form in Seller Central.'),()=>toast('Copy was blocked by the browser. Select the text and copy it manually.'))}catch(e){toast('Copy was blocked by the browser. Select the text and copy it manually.')}},
  submitted:()=>{const v=($('#caseIdIn').value||'').trim();if(!/^\d{6,}$/.test(v)){toast('Enter the numeric case ID from Seller Central.');return}const k=CASES.find(x=>x.id===S.selCase);k.caseId=v;k.status='Awaiting Amazon';k.opened='Today';k.due=48;k.tl.push(['Just now',k.owner,'Submitted in Seller Central. Tracking started.']);render();toast('Tracking case '+v+'. Follow-up reminder in 48 hours.')},
@@ -660,7 +1177,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.modal){S.modal=null;renderModal()}if((e.key==='Enter'||e.key===' ')&&e.target.matches('tr[data-act]')){e.preventDefault();A[e.target.dataset.act](e.target.dataset,e.target,e)}});
 document.addEventListener('change',e=>{const t=e.target,k=t.dataset.in;if(!k)return;
  if(k==='mkt'){S.mkt=t.value;render()}
- else if(k==='qty'){const d=S.dec[t.dataset.k];const r=findRow(t.dataset.k);let v=Math.max(0,Math.round(+t.value||0));v=Math.ceil(v/r.pack)*r.pack;d.qty=v;t.value=v}
+ else if(k==='qty'){const d=S.dec[t.dataset.k];const r=findRow(t.dataset.k);let v=Math.max(0,Math.round(+t.value||0));v=Math.ceil(v/r.pack)*r.pack;d.qty=v;t.value=v;scheduleSave()}
  else if(k==='assign'){ALERTS.find(a=>a.id===t.dataset.v).assignee=t.value||null;render()}
  else if(k==='imgok'){S.wiz.imgs[+t.dataset.i].ok=t.checked;render()}
  else if(k==='upload'){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{S.wiz.main=r.result;S.wiz.mainCheck=null;render();S.wiz.mainCheck=await checkMain(r.result);render()};r.readAsDataURL(f)}
@@ -671,11 +1188,62 @@ document.addEventListener('input',e=>{const t=e.target,k=t.dataset.in;if(!k)retu
   const lab=t.parentElement.querySelector('.lab span');if(lab&&t.dataset.f!=='d')lab.textContent=`${t.value.length} / ${t.dataset.f==='t'?200:250}`;
   $('#checks').innerHTML=checksFor(S.wiz.lang).map(x=>chk(x[0],x[1],x[2])).join('');
   const dot=document.querySelector('.tabs [aria-selected="true"] .dot');if(dot)dot.style.background=langOK(S.wiz.lang)?'var(--ok)':'var(--warn)'}
- else if(k==='draft'){CASES.find(x=>x.id===S.selCase).draft[t.dataset.f]=t.value}
+ else if(k==='draft'){CASES.find(x=>x.id===S.selCase).draft[t.dataset.f]=t.value;scheduleSave()}
 });
-const bs=$('#brandSel');bs.innerHTML=`<option value="all">All brand partners</option>`+BRANDS.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
-bs.addEventListener('change',()=>{S.brand=bs.value;S.selAlert=null;S.selCase=null;S.listSel=null;S.open=null;render()});
-render();
+/* ---------- data loading ---------- */
+function applyData(D){
+ const W=[],codes=MKTS.map(m=>m.c);
+ TEAM=Array.isArray(D.team)&&D.team.length?D.team:['Unassigned'];
+ BRANDS=(D.brands||[]).map(b=>({id:String(b.id),name:b.name||b.id,base:+b.weeklyRevenueEUR||0,price:+b.averagePriceEUR||1}));
+ SKUS={};(D.brands||[]).forEach(b=>{SKUS[b.id]=(b.products||[]).map(p=>({sku:String(p.sku),name:p.name||p.sku,price:+p.priceEUR||0,share:p.salesShare==null?.2:+p.salesShare,lead:+p.leadTimeWeeks||6,pack:+p.casePack||1}))});
+ const bOK=id=>BRANDS.some(b=>b.id===id),sOK=sku=>Object.values(SKUS).some(l=>l.some(p=>p.sku===sku));
+ const chkRef=(kind,o,sku)=>{if(!bOK(o.brand)){W.push(`${kind} ${o.id}: unknown brand "${o.brand}"`);return false}if(!codes.includes(o.marketplace)){W.push(`${kind} ${o.id}: unknown marketplace "${o.marketplace}"`);return false}if(sku&&!sOK(o.sku)){W.push(`${kind} ${o.id}: unknown SKU "${o.sku}"`);return false}return true};
+ ALERTS=(D.alerts||[]).filter(a=>chkRef('Alert',a,true)).map(a=>{const sev=SEVS.includes(a.severity)?a.severity:'medium';if(sev!==a.severity)W.push(`Alert ${a.id}: severity "${a.severity}" is not critical, high, medium or low`);return{id:String(a.id),brand:a.brand,sev,type:a.type||'Alert',sku:a.sku,mkt:a.marketplace,ago:a.when||'',impact:a.impact||'',title:a.title||'',detail:a.detail||'',steps:a.steps||[],source:a.source||'',api:a.detectedByApi!==false,canCase:!!a.canOpenCase,shipment:a.shipmentId,units:a.units,link:a.openTool,status:'open',assignee:null}});
+ const ST=['Draft','Awaiting Amazon','Needs reply','Resolved'];
+ CASES=(D.cases||[]).filter(k=>chkRef('Case',k,!!k.sku)).map(k=>{if(!ST.includes(k.status))W.push(`Case ${k.id}: status "${k.status}" is not one of ${ST.join(', ')}`);const o={id:String(k.id),brand:k.brand,mkt:k.marketplace,sku:k.sku||null,subject:k.subject||'',status:ST.includes(k.status)?k.status:'Awaiting Amazon',caseId:k.caseId||null,opened:k.opened||'',due:k.followUpInHours==null?null:+k.followUpInHours,owner:k.owner||TEAM[0],tl:(k.history||[]).map(h=>[h.when||'',h.who||'',h.text||'',h.fromAmazon?1:0])};if(k.amazonAsks)o.sum={ask:k.amazonAsks,next:k.suggestedNextStep||''};if(o.status==='Draft')o.draft={subject:o.subject,body:k.draftBody||''};return o});
+ const LS=['live','issue','processing','draft'];
+ LISTINGS=(D.listings||[]).filter(l=>{if(!bOK(l.brand)){W.push(`Listing ${l.id}: unknown brand "${l.brand}"`);return false}return true}).map(l=>{const st={};Object.entries(l.status||{}).forEach(([c,v])=>{if(!codes.includes(c))W.push(`Listing ${l.id}: unknown marketplace "${c}"`);else if(!LS.includes(v))W.push(`Listing ${l.id}: status "${v}" in ${c} is not live, issue, processing or draft`);else st[c]=v});return{id:String(l.id),brand:l.brand,name:l.product||'',updated:l.updated||'',st,issue:l.issues||{}}});
+ if(!BRANDS.length)throw new Error('data.json has no brands');
+ return W;
+}
+/* ---------- saving in this browser ---------- */
+const STORE='paravostra-prototype-v1';let ORIG={},saveT=null,canStore=true;
+function snapshotOrig(){ORIG={a:{},k:{},l:{}};ALERTS.forEach(a=>ORIG.a[a.id]=JSON.stringify({s:a.status,o:a.assignee}));CASES.forEach(k=>ORIG.k[k.id]=JSON.stringify(k));LISTINGS.forEach(l=>ORIG.l[l.id]=JSON.stringify(l))}
+function changedCount(){let n=0;for(const k in S.dec){const d=S.dec[k];if(d.st!=='pending'||d.qty!==d.rec)n++}ALERTS.forEach(a=>{if(JSON.stringify({s:a.status,o:a.assignee})!==ORIG.a[a.id])n++});CASES.forEach(k=>{if(k.mine||JSON.stringify(k)!==ORIG.k[k.id])n++});LISTINGS.forEach(l=>{if(l.mine||JSON.stringify(l)!==ORIG.l[l.id])n++});return n}
+function scheduleSave(){clearTimeout(saveT);saveT=setTimeout(saveState,250)}
+function saveState(){if(!canStore)return;try{
+ const dec={};for(const k in S.dec){const d=S.dec[k];if(d.st!=='pending'||d.qty!==d.rec)dec[k]=d}
+ const alerts=ALERTS.filter(a=>JSON.stringify({s:a.status,o:a.assignee})!==ORIG.a[a.id]).map(a=>({id:a.id,status:a.status,assignee:a.assignee}));
+ const cases=CASES.filter(k=>k.mine||JSON.stringify(k)!==ORIG.k[k.id]);
+ const listings=LISTINGS.filter(l=>l.mine||JSON.stringify(l)!==ORIG.l[l.id]);
+ const empty=!Object.keys(dec).length&&!alerts.length&&!cases.length&&!listings.length;
+ if(empty)localStorage.removeItem(STORE);else localStorage.setItem(STORE,JSON.stringify({v:1,dec,alerts,cases,listings}));
+ updateSaveNote(empty?0:changedCount());
+}catch(e){canStore=false;updateSaveNote(-1)}}
+function restoreState(){try{const raw=localStorage.getItem(STORE);if(!raw)return;const P=JSON.parse(raw);if(P.v!==1)return;
+ S.dec=P.dec||{};
+ (P.alerts||[]).forEach(x=>{const a=ALERTS.find(y=>y.id===x.id);if(a){a.status=x.status;a.assignee=x.assignee}});
+ const bOK=id=>BRANDS.some(b=>b.id===id);
+ (P.cases||[]).forEach(x=>{if(!bOK(x.brand))return;const i=CASES.findIndex(y=>y.id===x.id);if(i>=0)CASES[i]=x;else if(x.mine)CASES.unshift(x)});
+ (P.listings||[]).forEach(x=>{if(!bOK(x.brand))return;const i=LISTINGS.findIndex(y=>y.id===x.id);if(i>=0)LISTINGS[i]=x;else if(x.mine)LISTINGS.unshift(x)});
+}catch(e){try{localStorage.removeItem(STORE)}catch(_){}}}
+function updateSaveNote(n){const el=$('#saveNote');if(!el)return;
+ el.innerHTML=n<0?'Changes can’t be saved in this browser, so they reset on reload.':n===0?'Your changes are saved in this browser.':`${n} change${n>1?'s':''} saved in this browser. <button class="resetbtn" data-act="resetDemo">Reset demo</button>`}
+A.resetDemo=()=>{if(!confirm('Reset the demo? This removes your changes in this browser and reloads the sample data.'))return;try{localStorage.removeItem(STORE)}catch(e){}location.reload()};
+async function boot(){
+ const fallback=JSON.parse(document.getElementById('fallback-data').textContent);
+ let src='built-in';
+ if(location.protocol.startsWith('http')&&!location.hostname.endsWith('claude.ai')&&!location.hostname.endsWith('claudeusercontent.com')){
+  try{const r=await fetch('data.json',{cache:'no-store'});if(r.status===404)throw new Error('404');if(!r.ok)throw new Error('HTTP '+r.status);const txt=await r.text();let D;try{D=JSON.parse(txt)}catch(e){throw new Error('data.json is not valid JSON: '+e.message)}DATA_WARN=applyData(D);src='data.json'}
+  catch(e){if(e.message!=='404')DATA_WARN=['Could not use data.json, so the built-in sample data is shown. '+e.message];applyData(fallback)}
+ }else applyData(fallback);
+ if(DATA_WARN.length){const n=document.createElement('div');n.className='databar';n.setAttribute('role','alert');n.innerHTML=`<b>data.json has ${DATA_WARN.length} problem${DATA_WARN.length>1?'s':''}.</b> Entries with problems are skipped.<ul>${DATA_WARN.map(w=>`<li>${esc(w)}</li>`).join('')}</ul><button class="btn small" onclick="this.parentElement.remove()">Hide</button>`;document.body.prepend(n)}
+ const bs=$('#brandSel');bs.innerHTML=`<option value="all">All brand partners</option>`+BRANDS.map(b=>`<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
+ snapshotOrig();restoreState();
+ bs.addEventListener('change',()=>{S.brand=bs.value;S.selAlert=null;S.selCase=null;S.listSel=null;S.open=null;render()});
+ render();
+}
+boot();
 </script>
 </body>
 </html>
