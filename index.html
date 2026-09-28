@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paravostra Ops prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0EC;--surface:#FFFFFF;--soft:#E5E8E2;--line:#D2D7CF;--ink:#1C2631;--ink2:#56616D;--ink3:#86909A;
+  --rail:#1C2631;--railink:#E3E7E0;--railmuted:#8F9AA4;--railhi:#27333F;
+  --signal:#F2C230;--signalink:#1C2631;
+  --ok:#2C7650;--okbg:#DFEEE4;--warn:#9A6400;--warnbg:#FAEFD2;--bad:#AE3A26;--badbg:#F7E1DB;--info:#2E6199;--infobg:#DFE8F3;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181E;--surface:#19212A;--soft:#212B35;--line:#2E3945;--ink:#E4E8E2;--ink2:#A3ADB6;--ink3:#76818C;
+  --rail:#0D1217;--railink:#E3E7E0;--railmuted:#7C8792;--railhi:#1B242D;
+  --ok:#72C595;--okbg:#17372A;--warn:#E8B64D;--warnbg:#372D12;--bad:#F08E7B;--badbg:#3D1F1A;--info:#86B5E6;--infobg:#182C42;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12181E;--surface:#19212A;--soft:#212B35;--line:#2E3945;--ink:#E4E8E2;--ink2:#A3ADB6;--ink3:#76818C;
+  --rail:#0D1217;--railink:#E3E7E0;--railmuted:#7C8792;--railhi:#1B242D;
+  --ok:#72C595;--okbg:#17372A;--warn:#E8B64D;--warnbg:#372D12;--bad:#F08E7B;--badbg:#3D1F1A;--info:#86B5E6;--infobg:#182C42;
+  color-scheme:dark;}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+a{color:var(--info)}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);height:100%}
+.rail{background:var(--rail);color:var(--railink);display:flex;flex-direction:column;padding:22px 14px 16px;overflow:auto}
+.mark{display:flex;align-items:baseline;gap:8px;padding:0 10px 22px}
+.mark b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.mark span{color:var(--signal);font-weight:700;font-size:15px}
+.rail label.small{display:block;color:var(--railmuted);font-size:12.5px;padding:0 10px 6px}
+.rail select{width:100%;background:var(--railhi);border:1px solid #33404D;color:var(--railink);border-radius:6px;padding:8px 10px;margin-bottom:22px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;color:var(--railink);font-weight:500}
+.nav button:hover{background:var(--railhi)}
+.nav button[aria-current="page"]{background:var(--railhi);box-shadow:inset 3px 0 0 var(--signal)}
+.nav button:focus-visible{outline:2px solid var(--signal)}
+.nav svg{width:18px;height:18px;flex:none;opacity:.85}
+.nav .count{margin-left:auto;background:var(--signal);color:var(--signalink);font-size:12px;font-weight:700;border-radius:10px;padding:0 7px;line-height:19px}
+.nav .count.dim{background:#33404D;color:var(--railink)}
+.railnote{margin-top:auto;color:var(--railmuted);font-size:12.5px;padding:18px 10px 0;border-top:1px solid #2A3643}
+.main{overflow:auto;min-width:0}
+.page{max-width:1280px;margin:0 auto;padding:28px 32px 64px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:0 0 4px}
+h2{font-size:17px;font-weight:700;margin:0;letter-spacing:-.005em}
+h3{font-size:15px;font-weight:600;margin:0}
+.sub{color:var(--ink2);margin:0;max-width:70ch}
+.muted{color:var(--ink2)}.faint{color:var(--ink3)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+select.sel,input.inp,textarea.inp{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+textarea.inp{width:100%;resize:vertical;line-height:1.45}
+input.inp{width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{all:unset;cursor:pointer;padding:7px 13px;font-weight:500;color:var(--ink2);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--info);outline-offset:-2px}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--ink3)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.9}
+.btn.signal{background:var(--signal);color:var(--signalink);border-color:var(--signal)}
+.btn.small{padding:5px 10px;font-size:13.5px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink2)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.panel>.ph{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px 12px;flex-wrap:wrap}
+.panel>.pb{padding:0 18px 18px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px}
+.stack{display:flex;flex-direction:column;gap:18px}
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--ink);border-bottom:1px solid var(--line);margin-bottom:22px}
+.kpi{padding:14px 18px 16px 0}
+.kpi+.kpi{padding-left:18px;border-left:1px solid var(--line)}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.kpi .l{color:var(--ink2);font-size:13.5px;margin-top:3px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+/* chart */
+.chartwrap{position:relative}
+.chartwrap svg{width:100%;height:auto;display:block}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:6px 9px;border-radius:5px;white-space:nowrap;transform:translate(-50%,-100%);display:none}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink2)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px;border-radius:2px}
+/* tables */
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--ink2);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--soft)}
+tr.sel td{background:var(--soft)}
+.cc{display:inline-block;min-width:30px;text-align:center;font-weight:700;font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--bg)}
+/* cover bar */
+.cover{position:relative;width:170px;height:14px;background:var(--soft);border-radius:3px;overflow:hidden}
+.cover .zone{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--signal) 0 4px,transparent 4px 8px);opacity:.8}
+.cover .fill{position:absolute;left:0;top:4px;height:6px;border-radius:2px}
+.cover .tgt{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.covertxt{font-size:12.5px;color:var(--ink2);margin-top:3px}
+.qty{width:84px;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.warn{background:var(--warnbg);color:var(--warn)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.info{background:var(--infobg);color:var(--info)}.pill.neutral{background:var(--soft);color:var(--ink2)}
+.why{background:var(--bg);border-left:3px solid var(--signal);padding:12px 14px;margin:2px 0 6px;font-size:14px}
+.why p{margin:0 0 8px;max-width:78ch}
+.why .facts{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--ink2);font-size:13px}
+.batch{position:sticky;bottom:0;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-radius:0 0 8px 8px;flex-wrap:wrap}
+.batch .btn{background:var(--signal);color:var(--signalink);border-color:var(--signal)}
+/* split views */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px;align-items:start}
+.list{display:flex;flex-direction:column}
+.item{all:unset;box-sizing:border-box;cursor:pointer;display:block;padding:13px 16px;border-bottom:1px solid var(--line);width:100%}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--soft)}
+.item[aria-selected="true"]{background:var(--soft);box-shadow:inset 3px 0 0 var(--ink)}
+.item:focus-visible{outline:2px solid var(--info);outline-offset:-2px}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item .t{font-weight:600}
+.item .m{font-size:13px;color:var(--ink2);margin-top:3px}
+.sev{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;margin-top:6px}
+.sev.critical{background:var(--bad)}.sev.high{background:var(--signal);box-shadow:0 0 0 1px var(--warn)}.sev.medium{background:var(--info)}.sev.low{background:var(--ink3)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13.5px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.detail{padding:20px 22px}
+.detail h2{font-size:20px;line-height:1.25;margin-bottom:8px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:14px 0}
+.kv dt{color:var(--ink2)}.kv dd{margin:0}
+ol.steps{margin:8px 0 0;padding-left:20px}
+ol.steps li{margin-bottom:5px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center}
+.sourcenote{font-size:13px;padding:8px 11px;border-radius:6px;margin-top:14px}
+.banner{display:flex;gap:12px;align-items:flex-start;background:var(--warnbg);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:14px}
+.banner b{color:var(--warn)}
+/* timeline */
+.tl{list-style:none;margin:12px 0 0;padding:0;border-left:2px solid var(--line)}
+.tl li{position:relative;padding:0 0 14px 16px;font-size:14px}
+.tl li::before{content:"";position:absolute;left:-6px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--ink3)}
+.tl li.amz::before{border-color:var(--signal);background:var(--signal)}
+.tl .w{font-size:12.5px;color:var(--ink2)}
+.summary{background:var(--infobg);border-radius:6px;padding:12px 14px;margin-top:12px;font-size:14px}
+.summary b{display:block;margin-bottom:2px}
+/* wizard */
+.steps-bar{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.steps-bar button{all:unset;cursor:pointer;padding:10px 16px 12px 0;margin-right:22px;color:var(--ink3);font-weight:500;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px}
+.steps-bar button b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:12px;margin-right:7px}
+.steps-bar button.done{color:var(--ink2)}
+.steps-bar button.done b{background:var(--ink2);color:var(--surface);border-color:var(--ink2)}
+.steps-bar button[aria-current="step"]{color:var(--ink);border-color:var(--ink)}
+.steps-bar button[disabled]{cursor:default}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.form .full{grid-column:1/-1}
+.form label{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.hint{font-size:13px;color:var(--ink2);margin-top:4px}
+.mainimg{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.mainimg .frame{width:160px;height:160px;border:1px solid var(--line);border-radius:6px;background:var(--soft);display:grid;place-items:center;overflow:hidden;flex:none}
+.mainimg .frame img{width:100%;height:100%;object-fit:contain;background:#fff}
+.checks{list-style:none;padding:0;margin:0;font-size:14px}
+.checks li{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
+.checks .i{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;margin-top:1px}
+.checks .i.ok{background:var(--okbg);color:var(--ok)}.checks .i.bad{background:var(--badbg);color:var(--bad)}.checks .i.warn{background:var(--warnbg);color:var(--warn)}
+.mkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.mk{cursor:pointer;display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--surface)}
+.mk[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.mk .box{width:16px;height:16px;border:1.5px solid var(--ink3);border-radius:3px;display:grid;place-items:center;font-size:11px;flex:none}
+.mk[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.mk small{display:block;color:var(--ink2);font-size:12.5px}
+.gen{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 11px;font-size:13.5px;font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs button .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:1px}
+.field{margin-bottom:14px}
+.field .lab{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.field .lab span{font-weight:400;color:var(--ink2)}
+.progress{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+.progress div{border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:14px;display:flex;justify-content:space-between}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.img{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.img .pic{aspect-ratio:1;background:var(--soft);display:grid;place-items:center}
+.img .pic svg{width:100%;height:100%;display:block}
+.img .body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.img .cap{font-weight:600;font-size:14px}
+.img.discarded .pic{opacity:.3}
+.verify{display:flex;gap:8px;align-items:center;font-size:13.5px;cursor:pointer}
+.verify input{width:16px;height:16px;accent-color:var(--ink)}
+.shimmer{width:100%;height:100%;background:linear-gradient(90deg,var(--soft) 0,var(--bg) 50%,var(--soft) 100%);background-size:200% 100%;animation:sh 1.1s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.pubrow{display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.pubrow:last-child{border-bottom:0}
+.pubrow .ttl{font-size:13.5px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fix{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.statusdots{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.sd{font-size:11.5px;font-weight:700;border-radius:4px;padding:1px 5px}
+.sd.live{background:var(--okbg);color:var(--ok)}.sd.issue{background:var(--badbg);color:var(--bad)}.sd.processing{background:var(--infobg);color:var(--info)}.sd.draft{background:var(--soft);color:var(--ink2)}
+.empty{padding:40px 22px;text-align:center;color:var(--ink2)}
+/* modal + toast */
+.overlay{position:fixed;inset:0;background:rgba(10,14,18,.5);display:grid;place-items:center;padding:20px;z-index:20}
+.modal{background:var(--surface);border-radius:10px;max-width:620px;width:100%;max-height:85vh;overflow:auto;padding:22px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:1100px){.grid2,.split,.gen{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){
+  body{height:auto}
+  .app{display:block;height:auto}
+  .rail{position:sticky;top:0;z-index:10;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));overflow:visible}
+  .mark{padding:0 6px 0 2px}
+  .rail label.small,.railnote{display:none}
+  .rail select{width:auto;flex:1;margin:0;min-width:140px}
+  .nav{flex-direction:row;overflow-x:auto;width:100%;gap:4px}
+  .nav button{padding:7px 10px;white-space:nowrap}
+  .nav button[aria-current="page"]{box-shadow:inset 0 -3px 0 var(--signal)}
+  .page{padding:20px 16px 56px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(3){padding-left:0;border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--line)}
+  .form{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="mark"><b>Paravostra</b><span>Ops</span></div>
+    <label class="small" for="brandSel">Brand partner</label>
+    <select id="brandSel" aria-label="Brand partner"></select>
+    <nav class="nav" id="nav" aria-label="Tools"></nav>
+    <div class="railnote">Prototype with sample data. Nothing here is connected to Amazon yet.</div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div id="layer"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function rng(seed){let a=0;for(const ch of String(seed))a=(a*31+ch.charCodeAt(0))|0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const eur=n=>'€'+Math.round(n).toLocaleString('en-GB');
+const eurC=n=>n>=1e6?'€'+(n/1e6).toFixed(2)+'m':n>=1e4?'€'+Math.round(n/1e3)+'k':n>=1e3?'€'+(n/1e3).toFixed(1)+'k':'€'+Math.round(n);
+const num=n=>Math.round(n).toLocaleString('en-GB');
+const pct=n=>(n>=0?'+':'')+n.toFixed(1)+'%';
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3600)}
+
+/* ---------- sample data ---------- */
+const BRANDS=[{id:'nordhaus',name:'Nordhaus Kitchen',base:92000,price:41},{id:'alba',name:'Alba Botanics',base:61000,price:22},{id:'veloria',name:'Veloria Sport',base:48000,price:29}];
+const MKTS=[['DE','Germany','de',.30],['UK','United Kingdom','en',.19],['FR','France','fr',.14],['IT','Italy','it',.10],['ES','Spain','es',.09],['NL','Netherlands','nl',.05],['SE','Sweden','sv',.03],['PL','Poland','pl',.035],['BE','Belgium','fr',.02],['IE','Ireland','en',.015],['TR','Türkiye','tr',.02]].map(([c,n,l,w])=>({c,n,l,w}));
+const mk=c=>MKTS.find(m=>m.c===c);
+const LANGS={en:'English',de:'German',fr:'French',it:'Italian',es:'Spanish',nl:'Dutch',sv:'Swedish',pl:'Polish',tr:'Turkish'};
+const SKUS={
+ nordhaus:[['NH-SK28','Cast iron skillet 28 cm',44.9],['NH-DO52','Enamelled Dutch oven 5.2 L',89],['NH-WK32','Carbon steel wok 32 cm',39.9],['NH-RT38','Enamel roasting tin 38 cm',34.5],['NH-KN20',"Chef's knife 20 cm",59]],
+ alba:[['AB-RH30','Rosehip face oil 30 ml',24.9],['AB-LV250','Lavender body wash 250 ml',9.9],['AB-SH75','Shea hand cream 75 ml',12.5],['AB-BK30','Bakuchiol night serum 30 ml',32],['AB-SS300','Sea salt body scrub 300 g',18]],
+ veloria:[['VS-RB5','Resistance band set (5)',24.9],['VS-YM6','Yoga mat 6 mm',34.9],['VS-FR45','Foam roller 45 cm',27.5],['VS-RB1','Running belt',19.9],['VS-GS2','Grip socks (2 pairs)',14.9]]};
+const skuInfo=sku=>{for(const b in SKUS)for(const s of SKUS[b])if(s[0]===sku)return{brand:b,sku,name:s[1],price:s[2]}};
+function asin(sku){const r=rng('asin'+sku),ch='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';let s='B0';for(let i=0;i<8;i++)s+=ch[Math.floor(r()*ch.length)];return s}
+const TEAM=['Ola Nowak','Marek Zieliński','Sophie Laurent','Luca Bianchi'];
+const brandName=id=>id==='all'?'All brand partners':BRANDS.find(b=>b.id===id).name;
+const brandsIn=()=>S.brand==='all'?BRANDS:BRANDS.filter(b=>b.id===S.brand);
+
+const S={view:'overview',brand:'all',mkt:'all',period:'week',dec:{},open:null,
+ af:{sev:'all',status:'open'},selAlert:null,selCase:null,caseMode:null,listSel:null,wiz:null,modal:null};
+
+/* ---------- sales series ---------- */
+const MONTH_SEAS=[.86,.8,.88,.9,.95,.92,1.08,.95,1.0,1.05,1.36,1.52];
+const PER={
+ week:{labels:Array.from({length:12},(_,i)=>'W'+(28+i)),name:'Week 39',cmp:'vs week 39 last year'},
+ month:{labels:['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],name:'September',cmp:'vs September last year'},
+ quarter:{labels:['Q4 24','Q1 25','Q2 25','Q3 25','Q4 25','Q1 26','Q2 26','Q3 26'],name:'Q3 2026',cmp:'vs Q3 2025'},
+ year:{labels:['2023','2024','2025','2026 YTD'],name:'2026 to date',cmp:'vs same period 2025'}};
+function seriesFor(b){
+ const w=S.mkt==='all'?1:mk(S.mkt).w, r=rng(b.id+S.mkt+S.period), cur=[],prev=[];
+ if(S.period==='week'){for(let i=0;i<12;i++){const wk=28+i;const f=(wk===28?1.46:wk===29?1.1:1)*(1+i/11*.09);const v=b.base*w*f*(.92+r()*.16);cur.push(v);prev.push(v/(1.05+r()*.13))}}
+ else if(S.period==='month'){[9,10,11,0,1,2,3,4,5,6,7,8].forEach((m,i)=>{const v=b.base*4.33*w*MONTH_SEAS[m]*(i>=3?1.07:1)*(.94+r()*.12);cur.push(v);prev.push(v/(1.07+r()*.1))})}
+ else if(S.period==='quarter'){[4,1,2,3,4,1,2,3].forEach((q,i)=>{const f=[0,.87,.95,1.02,1.3][q];const v=b.base*13*w*f*(1+i*.022)*(.95+r()*.1);cur.push(v);prev.push(v/(1.08+r()*.1))})}
+ else{[.6,.77,.9,.72].forEach((f,i)=>{const v=b.base*52*w*f*(.97+r()*.06);cur.push(v);prev.push(i===3?v/(1.1+r()*.06):v/(1.14+r()*.1))})}
+ return{cur,prev};
+}
+function series(){const bs=brandsIn();const labels=PER[S.period].labels;const out={labels,cur:labels.map(()=>0),prev:labels.map(()=>0),units:0};
+ bs.forEach(b=>{const s=seriesFor(b);s.cur.forEach((v,i)=>out.cur[i]+=v);s.prev.forEach((v,i)=>out.prev[i]+=v);out.units+=s.cur[s.cur.length-1]/b.price});return out}
+
+/* ---------- restock ---------- */
+const SHARE=[.34,.14,.22,.16,.14],LEAD=[6,8,6,5,10],PACK=[6,4,8,6,12];
+function restockRows(){
+ const rows=[];
+ brandsIn().forEach(b=>{const r=rng('rs'+b.id);SKUS[b.id].forEach(([sku,name,price],si)=>{['DE','UK','FR','IT','ES'].forEach(c=>{
+  const m=mk(c);const vel=Math.max(4,Math.round(b.base/b.price*m.w*SHARE[si]*(.8+r()*.4)));
+  const avail=Math.round(vel*(.4+r()*9.5));const inbound=r()<.33?Math.round(vel*(1+r()*3)):0;
+  const lead=LEAD[si],safety=2,target=lead+safety,cover=(avail+inbound)/vel;
+  const trend=Math.round(-8+r()*42),oos=cover<2?Math.round(1+r()*5):0,conf=r()>.3?'High':'Medium';
+  if(S.mkt!=='all'&&S.mkt!==c)return;
+  if(cover>=target)return;
+  const pack=PACK[si];const rec=Math.ceil(Math.max(0,(target+4)*vel*(1+Math.max(trend,0)/200)-avail-inbound)/pack)*pack;
+  rows.push({key:sku+'-'+c,brand:b.id,sku,name,price,c,vel,avail,inbound,lead,target,cover,rec,pack,trend,oos,conf,cost:price*.38});
+ })})});
+ return rows.sort((a,b)=>a.cover-b.cover).slice(0,14);
+}
+const dec=row=>S.dec[row.key]||(S.dec[row.key]={st:'pending',qty:row.rec});
+function reason(x){
+ const m=mk(x.c);const p=[];
+ p.push(`Stock covers ${x.cover.toFixed(1)} weeks, but a reorder from the supplier takes ${x.lead} weeks and we keep 2 weeks of safety stock.`);
+ p.push(`Sales in ${m.n} are ${x.trend>=0?'up':'down'} ${Math.abs(x.trend)}% over the last 4 weeks${x.trend>15?', so the forecast leans on the recent trend rather than last year':''}.`);
+ if(x.oos)p.push(`The product was out of stock for ${x.oos} days in the last 30, and the forecast adds back the sales lost in that time.`);
+ p.push(`Black Friday (27 November) falls inside the replenishment window, so that week is forecast about ${x.brand==='alba'?'1.8':'2.3'} times a normal week.`);
+ p.push(`The quantity covers ${x.target+4} weeks of demand and is rounded up to full cases of ${x.pack}.`);
+ return p.join(' ');
+}
+
+/* ---------- alerts ---------- */
+const ALERTS=[
+ {id:'A1',brand:'alba',sev:'critical',type:'Listing suppressed',sku:'AB-RH30',mkt:'DE',ago:'38 min ago',impact:'About €410 a day in lost sales',source:'Notifications API',api:true,title:'Rosehip face oil 30 ml is suppressed in Germany',detail:'Amazon removed the offer from search after a dangerous goods review flagged a missing safety data sheet (SDS). The listing stays suppressed until the SDS is uploaded and approved.',steps:['Upload the supplier SDS under dangerous goods classification in Seller Central.','Open a case to ask for an expedited review if the suppression lasts more than 48 hours.'],canCase:true},
+ {id:'A2',brand:'nordhaus',sev:'high',type:'Buy Box lost',sku:'NH-SK28',mkt:'FR',ago:'1 h ago',impact:'About €260 a day in lost sales',source:'Notifications API',api:true,title:'Buy Box lost on Cast iron skillet 28 cm in France',detail:'Another seller offers the same ASIN at €39.90 with FBA, 11% below your €44.90. You held the Buy Box 96% of the time over the last 30 days.',steps:['Check whether the other seller is authorised by Nordhaus.','If not, report them through Brand Registry as a possible counterfeit or unauthorised seller.','If they are, consider a temporary price match within the agreed minimum price.'],canCase:true},
+ {id:'A3',brand:'nordhaus',sev:'high',type:'Low stock',sku:'NH-DO52',mkt:'DE',ago:'3 h ago',impact:'Stockout in about 9 days',source:'FBA Inventory API',api:true,title:'Enamelled Dutch oven 5.2 L runs out in about 9 days in Germany',detail:'At the current sales rate, available FBA stock lasts 9 days. The supplier lead time is 8 weeks, so a stockout is likely before new stock arrives.',steps:['Review the restock recommendation for this product.','Consider moving units from the UK or France to Germany in the meantime.'],canCase:false,link:'overview'},
+ {id:'A4',brand:'veloria',sev:'medium',type:'Stranded inventory',sku:'VS-YM6',mkt:'IT',ago:'6 h ago',impact:'64 units cannot be sold',source:'Reports API, daily',api:true,title:'64 units of Yoga mat 6 mm are stranded in Italy',detail:'The units are in an Amazon warehouse but have no active offer, because the Italian listing closed after a price update failed validation.',steps:['Relist the offer with a valid price.','If relisting fails, create a removal order or open a case.'],canCase:true},
+ {id:'A5',brand:'veloria',sev:'critical',type:'Account health',sku:'VS-RB5',mkt:'UK',ago:'Today, 08:12',impact:'Policy warning on the account',source:'Seller Central, logged by hand. Account health warnings are not available through the SP-API.',api:false,title:'Trademark complaint on Resistance band set (5) in the UK',detail:'A rights owner filed a trademark complaint against the listing. Amazon removed the listing and added a policy warning to the account health dashboard.',steps:['Confirm with Veloria that the brand name and images are their own.','Submit an appeal with the trademark registration and supplier invoice.','Contact the rights owner if the complaint looks like a mistake.'],canCase:true},
+ {id:'A6',brand:'nordhaus',sev:'medium',type:'Inbound discrepancy',sku:'NH-WK32',mkt:'DE',ago:'Yesterday',impact:'24 units, about €960 at retail',source:'Fulfillment Inbound API',api:true,title:'Shipment FBA18K2QW7 arrived 24 units short',detail:'Nordhaus shipped 240 units of Carbon steel wok 32 cm to DTM2. Amazon received 216 and closed the shipment.',steps:['Collect the proof of delivery and the packing list.','Open a reconciliation case for the missing units.'],canCase:true,shipment:'FBA18K2QW7',units:24},
+ {id:'A7',brand:'alba',sev:'low',type:'Price anomaly',sku:'AB-LV250',mkt:'ES',ago:'Yesterday',impact:'11 units sold below minimum price',source:'Product Pricing API',api:true,title:'Lavender body wash 250 ml is priced at €2.49 in Spain',detail:'The price fell from €9.90 to €2.49 after an automated repricer update. Eleven units sold at the lower price.',steps:['Restore the price to €9.90.','Check the repricer rule for Spain.'],canCase:false},
+ {id:'A8',brand:'nordhaus',sev:'medium',type:'New seller on listing',sku:'NH-WK32',mkt:'PL',ago:'2 days ago',impact:'Possible unauthorised seller',source:'Notifications API',api:true,title:'An unknown seller joined Carbon steel wok 32 cm in Poland',detail:'A seller called HomeStar24 offers the ASIN at 149 zł (about €35), shipped by the merchant. Nordhaus has no reseller agreement with them.',steps:['Make a test purchase to check whether the product is genuine.','If it is not, report the seller through Brand Registry.'],canCase:true},
+ {id:'A9',brand:'alba',sev:'low',type:'Listing quality',sku:'AB-SH75',mkt:'SE',ago:'3 days ago',impact:'Lower search relevance in Sweden',source:'Listings Items API',api:true,title:'Shea hand cream 75 ml has no Swedish bullet points',detail:'The Swedish listing shows the English bullet points, which lowers relevance in Swedish search.',steps:['Generate Swedish content in Listings.','Review and publish it.'],canCase:false,link:'listings'},
+ {id:'A10',brand:'veloria',sev:'high',type:'Lost inventory',sku:'VS-FR45',mkt:'FR',ago:'4 days ago',impact:'12 units, about €330 at retail',source:'Reports API, inventory ledger',api:true,title:'12 units of Foam roller 45 cm were lost in a French warehouse',detail:'The inventory ledger shows 12 units marked as lost at ORY4, with no automatic reimbursement after 30 days.',steps:['Check the reimbursements report.','Open a case to request reimbursement.'],canCase:true,units:12}
+].map(a=>({...a,status:'open',assignee:null}));
+const SEVS=['critical','high','medium','low'];
+
+/* ---------- cases ---------- */
+const CASES=[
+ {id:'K1',brand:'nordhaus',mkt:'DE',sku:'NH-SK28',subject:'Reimbursement for 18 units lost in warehouse',status:'Awaiting Amazon',caseId:'15738204931',opened:'3 days ago',due:22,owner:'Ola Nowak',tl:[['3 days ago','Ola Nowak','Opened the case in Seller Central with the inventory ledger extract.'],['2 days ago','Amazon','Automatic reply: the case is under investigation, with an answer within 3 business days.',1]]},
+ {id:'K2',brand:'alba',mkt:'FR',sku:'AB-BK30',subject:'Listing suppressed: safety data sheet review',status:'Needs reply',caseId:'15720991177',opened:'6 days ago',due:-6,owner:'Sophie Laurent',tl:[['6 days ago','Sophie Laurent','Opened the case with the English SDS attached.'],['Yesterday','Amazon','Please provide a safety data sheet in French covering sections 1 to 16. Documents in English cannot be accepted for this marketplace.',1]],sum:{ask:'A safety data sheet in French, sections 1 to 16.',next:'Ask Alba Botanics for the French SDS, then reply on the case with it attached.'}},
+ {id:'K3',brand:'nordhaus',mkt:'UK',sku:'NH-RT38',subject:'Wrong dimensions causing a higher FBA fee',status:'Awaiting Amazon',caseId:'15689420058',opened:'9 days ago',due:-26,owner:'Marek Zieliński',tl:[['9 days ago','Marek Zieliński','Opened the case with the carton measurements and photos.'],['7 days ago','Amazon','We have asked the fulfilment centre to remeasure the item.',1],['4 days ago','Marek Zieliński','Followed up: no update received.']]},
+ {id:'K4',brand:'veloria',mkt:'DE',sku:null,subject:'Brand Registry: add a new brand representative',status:'Resolved',caseId:'15601143820',opened:'3 weeks ago',due:null,owner:'Luca Bianchi',tl:[['3 weeks ago','Luca Bianchi','Opened the case with the authorisation letter.'],['5 days ago','Amazon','The new representative has been added to the brand.',1],['5 days ago','Luca Bianchi','Marked as resolved.']]}
+];
+let caseSeq=5;
+function caseDraft(a){
+ const s=skuInfo(a.sku),m=mk(a.mkt),b=brandName(a.brand);
+ const facts=[`ASIN: ${asin(a.sku)}`,`SKU: ${a.sku}`,`Marketplace: amazon.${a.mkt==='UK'?'co.uk':a.mkt==='BE'?'com.be':a.mkt==='TR'?'com.tr':a.mkt.toLowerCase()}`];
+ let subj,intro,ask,att;
+ switch(a.type){
+  case 'Listing suppressed':subj=`Suppressed listing: ${s.name} (${a.mkt}), SDS review`;intro=`our listing for ${s.name} was suppressed in ${m.n} after the dangerous goods review requested a safety data sheet.`;ask=`We have now uploaded the SDS. Could you please expedite the review and reinstate the listing? It is one of our best-selling products in this marketplace.`;att=['Safety data sheet (sections 1 to 16)','Screenshot of the suppression notice'];break;
+  case 'Inbound discrepancy':subj=`Shipment ${a.shipment}: ${a.units} units not received`;intro=`shipment ${a.shipment} to DTM2 was closed with ${a.units} fewer units of ${s.name} than we sent (240 shipped, 216 received).`;ask=`Please investigate the discrepancy and either locate the units or reimburse them.`;att=['Proof of delivery signed by the carrier','Packing list with carton contents'];facts.push(`Shipment ID: ${a.shipment}`);break;
+  case 'Lost inventory':subj=`Reimbursement request: ${a.units} lost units of ${s.name}`;intro=`the inventory ledger shows ${a.units} units of ${s.name} marked as lost at ORY4 more than 30 days ago, and no reimbursement has been issued.`;ask=`Please reimburse the lost units or confirm that they have been found.`;att=['Inventory ledger extract'];break;
+  case 'Account health':subj=`Appeal: trademark complaint on ${s.name}`;intro=`we received a trademark complaint on ${s.name} in ${m.n}. The brand and all images on the listing belong to ${b}, which owns the registered trademark.`;ask=`Please review the attached evidence, reinstate the listing and remove the policy warning from our account.`;att=['Trademark registration certificate','Invoice from the manufacturer','Letter of authorisation from the brand owner'];break;
+  case 'Buy Box lost':case 'New seller on listing':subj=`Possible unauthorised seller on ${s.name} (${a.mkt})`;intro=`a seller we have not authorised is offering ${s.name} in ${m.n}. ${b} does not supply this seller, and we are concerned the product may not be genuine.`;ask=`Could you please review this seller's offer and the authenticity of their inventory?`;att=['Brand Registry details','Test purchase photos (to follow)'];break;
+  default:subj=`${a.type}: ${s.name} (${a.mkt})`;intro=`${a.detail.charAt(0).toLowerCase()+a.detail.slice(1)}`;ask=`Please help us resolve this so the units can be sold again.`;att=['Screenshots of the issue'];
+ }
+ const body=`Hello,\n\nWe manage this account on behalf of ${b}. We are contacting you because ${intro}\n\n${facts.join('\n')}\n\n${ask}\n\nAttached:\n${att.map(x=>'- '+x).join('\n')}\n\nThank you,\nParavostra operations team`;
+ return{subject:subj,body};
+}
+function followUp(k){const s=k.sku?skuInfo(k.sku):null;return{subject:`Follow-up on case ${k.caseId}: ${k.subject}`,body:`Hello,\n\nI am following up on case ${k.caseId}, opened ${k.opened}${s?`, regarding ${s.name} (ASIN ${asin(k.sku)})`:''}.\n\nWe have not received an update since the last reply. Could you please share the current status and the expected time to resolution? If anything else is needed from our side, let us know and we will send it the same day.\n\nThank you,\nParavostra operations team`}}
+
+/* ---------- listings ---------- */
+const LISTINGS=[
+ {id:'L1',brand:'nordhaus',name:'Carbon steel wok 32 cm',updated:'2 days ago',st:{DE:'live',UK:'live',FR:'live',IT:'issue',ES:'live',NL:'live'},issue:{IT:'Missing required attribute: material composition'}},
+ {id:'L2',brand:'nordhaus',name:'Enamel roasting tin 38 cm',updated:'5 days ago',st:{DE:'live',UK:'live',FR:'processing',IT:'draft',ES:'draft'},issue:{}},
+ {id:'L3',brand:'alba',name:'Bakuchiol night serum 30 ml',updated:'Yesterday',st:{DE:'live',FR:'live',IT:'live',ES:'issue',NL:'live',SE:'live',PL:'processing'},issue:{ES:'Ingredient review: provide the full INCI list'}},
+ {id:'L4',brand:'veloria',name:'Grip socks (2 pairs)',updated:'3 days ago',st:{DE:'live',UK:'live',FR:'live'},issue:{}}
+];
+const CONTENT={
+en:{t:"Nordhaus Cast Iron Skillet 28 cm – Pre-Seasoned Frying Pan for Induction, Gas and Oven, with Pour Spouts and Helper Handle",b:["EVEN HEAT, BETTER SEARING – Thick cast iron holds and spreads heat evenly, so steaks sear and vegetables brown without hot spots.","READY TO COOK – Pre-seasoned with vegetable oil, so you can start cooking straight away. The natural non-stick surface improves with every use.","WORKS ON EVERY HOB – Suitable for induction, gas, electric and ceramic hobs, and oven safe up to 260 °C for baking and roasting.","DESIGNED FOR REAL KITCHENS – Two pour spouts for sauces and fat, plus a helper handle for a secure grip when lifting the 2.9 kg pan.","BUILT TO LAST – Solid one-piece cast iron with no coating to wear off. Hand wash, dry and oil lightly to keep it in top condition."],d:"The Nordhaus 28 cm cast iron skillet is made for everyday cooking and weekend projects alike. Its heavy base holds heat for a deep sear, it moves from hob to oven without a second pan, and it comes pre-seasoned so it is ready from day one. Care is simple: hand wash, dry thoroughly and wipe with a little oil.",k:['cast iron skillet','induction']},
+de:{t:"Nordhaus Gusseisenpfanne 28 cm – Vorgeölte Bratpfanne für Induktion, Gas und Backofen, mit Ausgießern und Gegengriff",b:["GLEICHMÄSSIGE HITZE – Dickes Gusseisen speichert und verteilt die Wärme gleichmäßig, für kräftige Röstaromen ohne Hotspots.","SOFORT EINSATZBEREIT – Mit Pflanzenöl vorgeölt, damit Sie direkt loslegen können. Die natürliche Antihaftwirkung verbessert sich mit jedem Gebrauch.","FÜR ALLE HERDARTEN – Geeignet für Induktion, Gas, Elektro und Ceran sowie backofenfest bis 260 °C.","DURCHDACHTES DESIGN – Zwei Ausgießer für Saucen und Fett sowie ein Gegengriff für sicheren Halt beim Anheben der 2,9 kg schweren Pfanne.","LANGLEBIG – Massives Gusseisen aus einem Stück, ohne Beschichtung, die sich abnutzen kann. Von Hand spülen, trocknen und leicht einölen."],d:"Die Nordhaus Gusseisenpfanne mit 28 cm Durchmesser ist für den Alltag ebenso gemacht wie für ausgiebiges Kochen am Wochenende. Der schwere Boden hält die Hitze für scharfes Anbraten, die Pfanne wandert ohne Umfüllen vom Herd in den Ofen und ist bereits vorgeölt. Die Pflege ist einfach: von Hand spülen, gründlich trocknen und mit etwas Öl einreiben.",k:['gusseisenpfanne','induktion']},
+fr:{t:"Nordhaus Poêle en fonte 28 cm – Poêle pré-culottée pour induction, gaz et four, avec becs verseurs et poignée auxiliaire",b:["CHALEUR HOMOGÈNE – La fonte épaisse conserve et répartit la chaleur uniformément pour saisir viandes et légumes sans points chauds.","PRÊTE À L'EMPLOI – Pré-culottée à l'huile végétale : vous pouvez cuisiner dès le premier jour. Son pouvoir antiadhésif s'améliore à chaque utilisation.","TOUS FEUX – Compatible induction, gaz, électrique et vitrocéramique, et utilisable au four jusqu'à 260 °C.","PENSÉE POUR LA CUISINE – Deux becs verseurs pour les sauces et une poignée auxiliaire pour soulever en toute sécurité cette poêle de 2,9 kg.","CONÇUE POUR DURER – Fonte massive d'une seule pièce, sans revêtement qui s'use. Laver à la main, sécher et huiler légèrement."],d:"La poêle en fonte Nordhaus de 28 cm accompagne aussi bien les repas du quotidien que les recettes du week-end. Son fond épais garde la chaleur pour une belle saisie, elle passe de la plaque au four sans changer d'ustensile et elle est livrée pré-culottée. L'entretien est simple : lavage à la main, séchage soigneux et un filet d'huile.",k:['poêle en fonte','induction']},
+it:{t:"Nordhaus Padella in ghisa 28 cm – Padella pre-stagionata per induzione, gas e forno, con beccucci e maniglia ausiliaria",b:["CALORE UNIFORME – La ghisa spessa trattiene e distribuisce il calore in modo uniforme, per rosolature perfette senza punti caldi.","PRONTA ALL'USO – Pre-stagionata con olio vegetale, puoi cucinare subito. L'effetto antiaderente naturale migliora a ogni utilizzo.","PER TUTTI I PIANI COTTURA – Adatta a induzione, gas, elettrico e vetroceramica, e resistente in forno fino a 260 °C.","DESIGN PRATICO – Due beccucci per versare sughi e grassi e una maniglia ausiliaria per sollevare in sicurezza i 2,9 kg della padella.","FATTA PER DURARE – Ghisa massiccia in un unico pezzo, senza rivestimenti che si consumano. Lavare a mano, asciugare e ungere leggermente."],d:"La padella in ghisa Nordhaus da 28 cm è pensata per la cucina di tutti i giorni e per le ricette del fine settimana. Il fondo pesante mantiene il calore per una rosolatura intensa, passa dal fornello al forno senza cambiare pentola ed è già pre-stagionata. La cura è semplice: lavare a mano, asciugare bene e passare un velo d'olio.",k:['padella in ghisa','induzione']},
+es:{t:"Nordhaus Sartén de hierro fundido 28 cm – Sartén precurada para inducción, gas y horno, con picos vertedores y asa auxiliar",b:["CALOR UNIFORME – El hierro fundido grueso retiene y reparte el calor de forma homogénea para sellar sin puntos calientes.","LISTA PARA USAR – Precurada con aceite vegetal para que puedas cocinar desde el primer día. El antiadherente natural mejora con cada uso.","PARA TODAS LAS COCINAS – Apta para inducción, gas, eléctrica y vitrocerámica, y para horno hasta 260 °C.","DISEÑO PRÁCTICO – Dos picos vertedores para salsas y grasa, y un asa auxiliar para levantar con seguridad sus 2,9 kg.","HECHA PARA DURAR – Hierro fundido macizo de una sola pieza, sin revestimientos que se desgasten. Lavar a mano, secar y aceitar ligeramente."],d:"La sartén de hierro fundido Nordhaus de 28 cm sirve tanto para el día a día como para las recetas del fin de semana. Su base gruesa mantiene el calor para un sellado intenso, pasa del fuego al horno sin cambiar de recipiente y viene precurada. El cuidado es sencillo: lavar a mano, secar bien y aplicar un poco de aceite.",k:['sartén de hierro fundido','inducción']},
+nl:{t:"Nordhaus Gietijzeren koekenpan 28 cm – Voorgebakken braadpan voor inductie, gas en oven, met schenktuiten en hulpgreep",b:["GELIJKMATIGE WARMTE – Dik gietijzer houdt de warmte vast en verdeelt die gelijkmatig, voor mooi dichtschroeien zonder hotspots.","DIRECT TE GEBRUIKEN – Voorgebakken met plantaardige olie, zodat je meteen kunt koken. De natuurlijke antiaanbaklaag wordt bij elk gebruik beter.","VOOR ELKE KOOKPLAAT – Geschikt voor inductie, gas, elektrisch en keramisch, en ovenbestendig tot 260 °C.","DOORDACHT ONTWERP – Twee schenktuiten voor sauzen en vet, en een hulpgreep om de pan van 2,9 kg veilig op te tillen.","GEMAAKT OM LANG MEE TE GAAN – Massief gietijzer uit één stuk, zonder coating die kan slijten. Met de hand afwassen, drogen en licht invetten."],d:"De Nordhaus gietijzeren koekenpan van 28 cm is gemaakt voor dagelijks koken en voor uitgebreide weekendrecepten. De zware bodem houdt de warmte vast voor krachtig aanbraden, de pan gaat zonder overscheppen van kookplaat naar oven en is al voorgebakken. Onderhoud is eenvoudig: met de hand afwassen, goed drogen en inwrijven met een beetje olie.",k:['gietijzeren koekenpan','inductie']},
+sv:{t:"Nordhaus Gjutjärnspanna 28 cm – Förbehandlad stekpanna för induktion, gas och ugn, med pipar och stödhandtag",b:["JÄMN VÄRME – Tjockt gjutjärn håller och sprider värmen jämnt, så att kött och grönsaker får fin stekyta utan heta punkter.","REDO ATT ANVÄNDA – Förbehandlad med vegetabilisk olja så att du kan börja laga mat direkt. Ytan blir bättre för varje användning.","FÖR ALLA SPISAR – Passar induktion, gas, el och keramikhäll, och tål ugn upp till 260 °C.","GENOMTÄNKT DESIGN – Två pipar för såser och fett, och ett stödhandtag för ett säkert grepp när du lyfter pannan på 2,9 kg.","BYGGD FÖR ATT HÅLLA – Massivt gjutjärn i ett stycke, utan beläggning som kan slitas bort. Diska för hand, torka och olja in lätt."],d:"Nordhaus gjutjärnspanna på 28 cm är gjord för vardagsmat och helgens längre matlagning. Den tunga botten håller värmen för ordentlig stekning, pannan går direkt från spis till ugn och är redan förbehandlad. Skötseln är enkel: diska för hand, torka ordentligt och stryk på lite olja.",k:['gjutjärnspanna','induktion']},
+pl:{t:"Nordhaus Patelnia żeliwna 28 cm – Wstępnie sezonowana patelnia do indukcji, gazu i piekarnika, z wylewkami i dodatkowym uchwytem",b:["RÓWNOMIERNE CIEPŁO – Grube żeliwo długo trzyma i równomiernie rozprowadza ciepło, dzięki czemu mięso i warzywa pięknie się przypiekają.","GOTOWA DO UŻYCIA – Wstępnie sezonowana olejem roślinnym, więc możesz gotować od razu. Naturalna nieprzywieralność poprawia się z każdym użyciem.","NA KAŻDĄ KUCHENKĘ – Do płyt indukcyjnych, gazowych, elektrycznych i ceramicznych oraz do piekarnika do 260 °C.","PRZEMYŚLANA KONSTRUKCJA – Dwie wylewki do sosów i tłuszczu oraz dodatkowy uchwyt ułatwiający bezpieczne podnoszenie patelni ważącej 2,9 kg.","NA LATA – Lite żeliwo odlane w jednym kawałku, bez powłoki, która mogłaby się zetrzeć. Myć ręcznie, osuszyć i lekko natłuścić."],d:"Patelnia żeliwna Nordhaus o średnicy 28 cm sprawdzi się zarówno na co dzień, jak i przy weekendowym gotowaniu. Ciężkie dno utrzymuje temperaturę, zapewniając intensywne przysmażanie, patelnia bez problemu przechodzi z kuchenki do piekarnika i jest już wstępnie sezonowana. Pielęgnacja jest prosta: myć ręcznie, dokładnie osuszyć i przetrzeć odrobiną oleju.",k:['patelnia żeliwna','indukcji']},
+tr:{t:"Nordhaus Döküm Tava 28 cm – İndüksiyon, Gaz ve Fırın için Ön Yağlanmış Tava, Akıtma Ağızlı ve Yardımcı Kulplu",b:["EŞİT ISI DAĞILIMI – Kalın döküm demir ısıyı tutar ve eşit dağıtır; etler ve sebzeler sıcak nokta olmadan güzelce kızarır.","KULLANIMA HAZIR – Bitkisel yağla ön yağlanmıştır, hemen yemek yapmaya başlayabilirsiniz. Yapışmazlık her kullanımda artar.","TÜM OCAKLARA UYGUN – İndüksiyon, gaz, elektrikli ve seramik ocaklarla uyumludur; 260 °C'ye kadar fırında kullanılabilir.","PRATİK TASARIM – Soslar ve yağ için iki akıtma ağzı ile 2,9 kg'lık tavayı güvenle kaldırmak için yardımcı kulp.","UZUN ÖMÜRLÜ – Tek parça masif döküm demir, aşınacak kaplama yoktur. Elde yıkayın, kurulayın ve hafifçe yağlayın."],d:"Nordhaus 28 cm döküm tava hem günlük yemekler hem de hafta sonu tarifleri için tasarlandı. Kalın tabanı ısıyı tutarak güçlü bir kızartma sağlar, ocaktan fırına doğrudan geçer ve ön yağlanmış olarak gelir. Bakımı kolaydır: elde yıkayın, iyice kurulayın ve biraz yağ sürün.",k:['döküm tava','indüksiyon']}};
+const PROMO=['best','#1','bestseller','free shipping','guarantee','beste','meilleur','migliore','mejor','gratis','garantie','najlepsz','en iyi','bäst','100%'];
+const IMG_SLOTS=[['life','Lifestyle on the table'],['dim','Size and weight'],['hob','Hob and oven compatibility'],['detail','Surface close-up'],['care','Care in three steps']];
+function newWiz(){return{step:1,name:'Cast iron skillet 28 cm',type:'COOKWARE',ean:'4260712345678',price:'44.90',features:'28 cm diameter, 2.9 kg, pre-seasoned with vegetable oil, induction, gas, electric and ceramic hobs, oven safe to 260 °C, two pour spouts, helper handle, one-piece cast iron, hand wash only',main:null,mainCheck:null,mkts:['DE','UK','FR','IT','ES','NL','SE','PL'],gen:null,genState:null,lang:null,imgs:null,pub:null,saved:false}}
+
+/* ---------- images (SVG) ---------- */
+function pan(cx,cy,r,ang,inner){const hx=cx+r*.92;return `<g transform="rotate(${ang} ${cx} ${cy})"><rect x="${hx}" y="${cy-r*.1}" width="${r*1.02}" height="${r*.2}" rx="${r*.09}" fill="#222"/><circle cx="${hx+r*.86}" cy="${cy}" r="${r*.045}" fill="none" stroke="#4a4a4a" stroke-width="${r*.022}"/><path d="M ${cx-r*.93} ${cy-r*.24} q ${-r*.3} ${r*.24} 0 ${r*.48}" fill="none" stroke="#222" stroke-width="${r*.11}" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#252525"/><circle cx="${cx}" cy="${cy}" r="${r*.88}" fill="#343434"/><circle cx="${cx}" cy="${cy}" r="${r*.82}" fill="#2b2b2b"/>${inner||''}<path d="M ${cx-r*.62} ${cy-r*.52} A ${r*.82} ${r*.82} 0 0 1 ${cx+r*.18} ${cy-r*.8}" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="${r*.04}" stroke-linecap="round"/></g>`}
+function imgSVG(k,v){const r=rng(k+v);const W='<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img">';
+ if(k==='main')return W+'<rect width="600" height="600" fill="#fff"/>'+pan(255,305,175,-24)+'</svg>';
+ if(k==='life'){const woods=[['#C9A37B','#B48A61'],['#A77B55','#8E6443'],['#D8BD98','#C3A27A']][v%3];let planks='';for(let y=0;y<600;y+=75)planks+=`<rect y="${y}" width="600" height="75" fill="${(y/75)%2?woods[0]:woods[1]}"/><line x1="0" y1="${y}" x2="600" y2="${y}" stroke="#000" stroke-opacity=".08"/>`;
+  let food='';const cols=['#E0583E','#F2C94C','#6FA86B','#E8E1D0','#A6423A'];for(let i=0;i<9;i++){const a=r()*6.28,d=r()*95;food+=`<circle cx="${290+Math.cos(a)*d}" cy="${320+Math.sin(a)*d}" r="${16+r()*16}" fill="${cols[Math.floor(r()*cols.length)]}"/>`}
+  for(let i=0;i<6;i++)food+=`<ellipse cx="${260+r()*80}" cy="${290+r()*70}" rx="10" ry="4" fill="#3E7B3A" transform="rotate(${r()*180} 300 320)"/>`;
+  return W+planks+`<rect x="-40" y="410" width="360" height="240" fill="#EDE6D6" transform="rotate(-8 140 520)"/><rect x="-40" y="440" width="360" height="10" fill="#C0453A" opacity=".6" transform="rotate(-8 140 520)"/><circle cx="520" cy="110" r="46" fill="#F4F1EA"/><circle cx="520" cy="110" r="34" fill="#E9E3D6"/>`+pan(290,320,170,-32+v*9,food)+'</svg>'}
+ if(k==='dim')return W+'<rect width="600" height="600" fill="#fff"/>'+pan(235,330,165,0)+`<g stroke="#1C2631" stroke-width="3"><line x1="70" y1="120" x2="400" y2="120"/><line x1="70" y1="105" x2="70" y2="135"/><line x1="400" y1="105" x2="400" y2="135"/></g><text x="235" y="98" font-family="Arial,sans-serif" font-weight="700" font-size="40" text-anchor="middle" fill="#1C2631">28 cm</text><rect x="400" y="480" width="150" height="70" rx="35" fill="${['#F2C230','#1C2631','#E6E1D5'][v%3]}"/><text x="475" y="528" font-family="Arial,sans-serif" font-weight="700" font-size="34" text-anchor="middle" fill="${v%3===1?'#fff':'#1C2631'}">2.9 kg</text></svg>`;
+ if(k==='hob'){const bg=['#F5F5F2','#EEF2F4','#F7F3EC'][v%3];return W+`<rect width="600" height="600" fill="${bg}"/><g fill="none" stroke="#1C2631" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><circle cx="150" cy="150" r="70"/><circle cx="150" cy="150" r="46"/><circle cx="150" cy="150" r="22"/><path d="M450 90 c-40 50 -55 80 -30 115 c15 20 45 20 60 0 c20 -30 5 -60 -10 -75 c0 25 -10 35 -20 35 c5 -30 5 -50 0 -75z"/><path d="M85 450 q20 -40 40 0 t40 0 t40 0" /><path d="M85 480 q20 -40 40 0 t40 0 t40 0"/><rect x="370" y="370" width="160" height="140" rx="12"/><rect x="395" y="410" width="110" height="75" rx="6"/><line x1="390" y1="392" x2="420" y2="392"/></g><text x="450" y="560" font-family="Arial,sans-serif" font-weight="700" font-size="34" text-anchor="middle" fill="#1C2631">260 °C</text><line x1="300" y1="40" x2="300" y2="560" stroke="#1C2631" stroke-opacity=".12" stroke-width="3"/><line x1="40" y1="300" x2="560" y2="300" stroke="#1C2631" stroke-opacity=".12" stroke-width="3"/></svg>`}
+ if(k==='detail'){let dots='';for(let i=0;i<260;i++)dots+=`<circle cx="${r()*600}" cy="${r()*600}" r="${1+r()*3.5}" fill="${r()>.5?'#3a3a3a':'#1c1c1c'}"/>`;return W+`<rect width="600" height="600" fill="#262626"/>${dots}<path d="M -50 ${470-v*20} Q 300 ${300-v*15} 650 ${420-v*10}" fill="none" stroke="#111" stroke-width="60"/><path d="M -50 ${450-v*20} Q 300 ${280-v*15} 650 ${400-v*10}" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="6"/><ellipse cx="${260+v*30}" cy="220" rx="130" ry="46" fill="#fff" opacity=".07" transform="rotate(-18 300 220)"/><circle cx="${330+v*20}" cy="170" r="16" fill="#C9A441" opacity=".55"/><circle cx="${326+v*20}" cy="165" r="5" fill="#fff" opacity=".5"/></svg>`}
+ if(k==='care'){const bg=['#F4F2EE','#EEF1EC','#F2EFF3'][v%3];return W+`<rect width="600" height="600" fill="${bg}"/>${[100,300,500].map((x,i)=>`<circle cx="${x}" cy="130" r="30" fill="#1C2631"/><text x="${x}" y="142" font-family="Arial,sans-serif" font-weight="700" font-size="32" text-anchor="middle" fill="#fff">${i+1}</text>`).join('')}<g fill="none" stroke="#1C2631" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M60 250 h60 v30"/><path d="M120 300 q-10 18 0 26 q10 -8 0 -26z"/><path d="M110 360 q-10 18 0 26 q10 -8 0 -26z"/><path d="M130 400 q-10 18 0 26 q10 -8 0 -26z"/><rect x="250" y="260" width="100" height="170" rx="10"/><line x1="250" y1="300" x2="350" y2="300"/><line x1="250" y1="330" x2="350" y2="330"/><path d="M480 260 h40 v30 l20 25 v120 h-80 v-120 l20 -25z"/><path d="M500 460 q-12 22 0 32 q12 -10 0 -32z"/></g></svg>`}
+ return W+'</svg>';
+}
+const svgURL=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+
+/* ---------- icons ---------- */
+const IC={
+ overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ listings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+ alerts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17v.5"/></svg>',
+ cases:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4V5z"/></svg>'};
+
+/* ---------- shell ---------- */
+function renderNav(){
+ const openA=ALERTS.filter(a=>a.status==='open'&&(S.brand==='all'||a.brand===S.brand)).length;
+ const needC=CASES.filter(k=>(S.brand==='all'||k.brand===S.brand)&&k.status!=='Resolved'&&(k.status==='Needs reply'||k.status==='Draft'||(k.due!=null&&k.due<0))).length;
+ const items=[['overview','Sales and restock',''],['listings','Listings',''],['alerts','Alerts',openA?`<span class="count">${openA}</span>`:''],['cases','Support cases',needC?`<span class="count">${needC}</span>`:'']];
+ $('#nav').innerHTML=items.map(([id,l,c])=>`<button data-act="go" data-v="${id}" ${S.view===id?'aria-current="page"':''}>${IC[id]}<span>${l}</span>${c}</button>`).join('');
+}
+function render(){renderNav();const v={overview:vOverview,listings:vListings,alerts:vAlerts,cases:vCases}[S.view];$('#main').innerHTML=`<div class="page">${v()}</div>`;renderModal();if(S.view==='overview')bindChart()}
+function mktSelect(){return `<select class="sel" data-in="mkt" aria-label="Marketplace"><option value="all">All 11 marketplaces</option>${MKTS.map(m=>`<option value="${m.c}" ${S.mkt===m.c?'selected':''}>${m.c}  ${m.n}</option>`).join('')}</select>`}
+
+/* ---------- overview ---------- */
+function vOverview(){
+ const s=series(),L=s.cur.length-1,rev=s.cur[L],prev=s.prev[L],chg=(rev/prev-1)*100;
+ const rows=restockRows();const atRisk=rows.filter(x=>x.cover<x.lead).length;
+ const pend=rows.filter(x=>dec(x).st==='pending');const appr=rows.filter(x=>dec(x).st==='approved');
+ const apprUnits=appr.reduce((a,x)=>a+dec(x).qty,0),apprVal=appr.reduce((a,x)=>a+dec(x).qty*x.cost,0);
+ const where=S.mkt==='all'?'all 11 marketplaces':mk(S.mkt).n;
+ return `<div class="head"><div><h1>Sales and restocking</h1><p class="sub">${esc(brandName(S.brand))} in ${where}. Amounts in EUR, converted from GBP, SEK, PLN and TRY at daily rates.</p></div>
+ <div class="controls">${mktSelect()}<div class="seg" role="group" aria-label="Period">${['week','month','quarter','year'].map(p=>`<button data-act="period" data-v="${p}" aria-pressed="${S.period===p}">${p[0].toUpperCase()+p.slice(1)}</button>`).join('')}</div></div></div>
+ <div class="kpis">
+  <div class="kpi"><div class="v">${eur(rev)}</div><div class="l">Revenue, ${PER[S.period].name} <span class="${chg>=0?'up':'down'}">${pct(chg)}</span> ${PER[S.period].cmp}</div></div>
+  <div class="kpi"><div class="v">${num(s.units)}</div><div class="l">Units sold, ${PER[S.period].name}</div></div>
+  <div class="kpi"><div class="v">${atRisk}</div><div class="l">Products that will run out before new stock can arrive</div></div>
+  <div class="kpi"><div class="v">${pend.length}</div><div class="l">Restock recommendations waiting for review</div></div>
+ </div>
+ <div class="grid2">
+  <section class="panel"><div class="ph"><h2>Revenue by ${S.period}</h2><div class="legend"><span><i style="background:var(--ink)"></i>This year</span><span><i style="background:transparent;border:2px dashed var(--ink3)"></i>Last year</span></div></div><div class="pb"><div class="chartwrap" id="chart">${chartSVG(s)}<div class="tip" id="tip"></div></div></div></section>
+  <section class="panel"><div class="ph"><h2>By marketplace</h2><span class="faint" style="font-size:13px">Select a row to filter</span></div><div class="tscroll" style="padding:0 8px 8px">${mktTable(s)}</div></section>
+ </div>
+ <section class="panel" style="margin-top:18px">
+  <div class="ph"><div><h2>Restock recommendations</h2><p class="sub" style="font-size:14px;margin-top:2px">Quantities come from a sales forecast. The explanation under each row is written by AI from the same numbers.</p></div>
+  <div class="controls"><span class="legend"><span><i style="background:repeating-linear-gradient(135deg,var(--signal) 0 3px,transparent 3px 6px)"></i>Supplier lead time</span><span><i style="background:var(--ink);width:3px"></i>Target cover</span></span>${pend.length?`<button class="btn small" data-act="approveAll">Approve all ${pend.length}</button>`:''}</div></div>
+  ${rows.length?`<div class="tscroll"><table><thead><tr><th style="padding-left:18px">Product</th><th>Market</th><th class="num">Available</th><th class="num">Inbound</th><th class="num">Sold per week</th><th>Weeks of cover</th><th class="num">Order qty</th><th></th></tr></thead><tbody>${rows.map(restockRow).join('')}</tbody></table></div>`:`<div class="empty">Every product has enough stock to cover its supplier lead time in ${where}.</div>`}
+  ${appr.length?`<div class="batch"><span><b>${appr.length} approved</b>, ${num(apprUnits)} units, about ${eur(apprVal)} at cost</span><button class="btn" data-act="plan">Review shipment plan</button></div>`:''}
+ </section>`;
+}
+function chartSVG(s){
+ const W=720,H=270,pl=58,pr=10,pt=14,pb=30,pw=W-pl-pr,ph=H-pt-pb,n=s.cur.length;
+ const max=Math.max(...s.cur,...s.prev)*1.12;const step=Math.pow(10,Math.floor(Math.log10(max/4)));const tick=Math.ceil(max/4/step)*step;
+ const y=v=>pt+ph-v/(tick*4)*ph,bw=pw/n;
+ let g='';for(let i=0;i<=4;i++){const yy=y(tick*i);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${pl-8}" y="${yy+4}" text-anchor="end" font-size="12" fill="var(--ink3)">${eurC(tick*i)}</text>`}
+ const bars=s.cur.map((v,i)=>`<rect class="bar" data-i="${i}" x="${pl+i*bw+bw*.2}" y="${y(v)}" width="${bw*.6}" height="${pt+ph-y(v)}" rx="2" fill="${i===n-1?'var(--ink)':'var(--ink2)'}" opacity="${i===n-1?1:.55}"/>`).join('');
+ const pts=s.prev.map((v,i)=>`${pl+i*bw+bw/2},${y(v)}`).join(' ');
+ const labels=s.labels.map((l,i)=>`<text x="${pl+i*bw+bw/2}" y="${H-9}" text-anchor="middle" font-size="12" fill="var(--ink2)">${l}</text>`).join('');
+ const hits=s.cur.map((v,i)=>`<rect class="hit" data-i="${i}" x="${pl+i*bw}" y="${pt}" width="${bw}" height="${ph}" fill="transparent"/>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Revenue chart">${g}${bars}<polyline points="${pts}" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="5 4"/>${s.prev.map((v,i)=>`<circle cx="${pl+i*bw+bw/2}" cy="${y(v)}" r="3" fill="var(--surface)" stroke="var(--ink3)" stroke-width="2"/>`).join('')}${labels}${hits}</svg>`;
+}
+function bindChart(){const c=$('#chart');if(!c)return;const s=series(),tip=$('#tip');
+ c.addEventListener('pointermove',e=>{const h=e.target.closest('.hit');c.querySelectorAll('.bar').forEach(b=>b.setAttribute('fill',b.dataset.i==(h&&h.dataset.i)?'var(--signal)':(+b.dataset.i===s.cur.length-1?'var(--ink)':'var(--ink2)')));if(!h){tip.style.display='none';return}
+  const i=+h.dataset.i,box=c.getBoundingClientRect(),hb=h.getBoundingClientRect();const ch=(s.cur[i]/s.prev[i]-1)*100;
+  tip.innerHTML=`<b>${s.labels[i]}</b>&nbsp; ${eur(s.cur[i])} <span style="opacity:.75">(${pct(ch)} on last year)</span>`;tip.style.display='block';tip.style.left=(hb.left-box.left+hb.width/2)+'px';tip.style.top=(Math.max(8,e.clientY-box.top-12))+'px'});
+ c.addEventListener('pointerleave',()=>{tip.style.display='none';c.querySelectorAll('.bar').forEach(b=>b.setAttribute('fill',+b.dataset.i===s.cur.length-1?'var(--ink)':'var(--ink2)'))});}
+function mktTable(s){
+ const bs=brandsIn();const total=S.mkt==='all'?s.cur[s.cur.length-1]:null;
+ const allRev=S.mkt==='all'?total:(()=>{const keep=S.mkt;S.mkt='all';const t=series();S.mkt=keep;return t.cur[t.cur.length-1]})();
+ return `<table><thead><tr><th>Market</th><th class="num">Revenue</th><th class="num">vs last year</th><th class="num">Share</th></tr></thead><tbody>${MKTS.map(m=>{const r=rng('mt'+m.c+S.brand+S.period);const v=allRev*m.w/0.99*(.93+r()*.14);const ch=-6+r()*30;
+  return `<tr class="click ${S.mkt===m.c?'sel':''}" data-act="mktrow" data-v="${m.c}" tabindex="0"><td><span class="cc">${m.c}</span> <span class="muted">${m.n}</span></td><td class="num">${eurC(v)}</td><td class="num ${ch>=0?'up':'down'}">${pct(ch)}</td><td class="num">${(m.w/0.99*100).toFixed(0)}%</td></tr>`}).join('')}</tbody></table>`;
+}
+function restockRow(x){
+ const d=dec(x),scale=14,pctw=v=>Math.min(100,v/scale*100);const col=x.cover<x.lead?'var(--bad)':'var(--warn)';const open=S.open===x.key;
+ const st=d.st==='approved'?'<span class="pill ok">Approved</span>':d.st==='planned'?'<span class="pill info">In draft plan</span>':d.st==='skipped'?'<span class="pill neutral">Skipped</span>':'';
+ return `<tr><td style="padding-left:18px"><div style="font-weight:600">${esc(x.name)}</div><div class="faint" style="font-size:12.5px">${x.sku}${S.brand==='all'?', '+esc(brandName(x.brand)):''}</div></td>
+ <td><span class="cc">${x.c}</span></td><td class="num">${num(x.avail)}</td><td class="num">${x.inbound?num(x.inbound):'<span class="faint">0</span>'}</td><td class="num">${num(x.vel)}</td>
+ <td><div class="cover" role="img" aria-label="${x.cover.toFixed(1)} weeks of cover, lead time ${x.lead} weeks, target ${x.target} weeks"><div class="zone" style="width:${pctw(x.lead)}%"></div><div class="fill" style="width:${pctw(x.cover)}%;background:${col}"></div><div class="tgt" style="left:${pctw(x.target)}%"></div></div><div class="covertxt">${x.cover.toFixed(1)} weeks${x.oos?`, out of stock ${x.oos} days last month`:''}</div></td>
+ <td class="num">${d.st==='pending'?`<input class="inp qty" type="number" min="0" step="${x.pack}" value="${d.qty}" data-in="qty" data-k="${x.key}" aria-label="Order quantity for ${esc(x.name)} in ${x.c}">`:`<b>${num(d.qty)}</b>`}</td>
+ <td style="white-space:nowrap;padding-right:18px">${st||`<button class="btn small primary" data-act="approve" data-k="${x.key}">Approve</button> <button class="btn small ghost" data-act="skip" data-k="${x.key}">Skip</button>`}${st&&d.st!=='planned'?` <button class="btn small ghost" data-act="undo" data-k="${x.key}">Undo</button>`:''} <button class="btn small ghost" data-act="why" data-k="${x.key}" aria-expanded="${open}">${open?'Hide reason':'Why'}</button></td></tr>
+ ${open?`<tr><td colspan="8" style="padding:0 18px 12px"><div class="why"><p>${reason(x)}</p><div class="facts"><span>Forecast confidence: ${x.conf}</span><span>Lead time ${x.lead} weeks, from the supplier sheet</span><span>Case pack ${x.pack}</span><span>Unit cost about ${eur(x.cost)}</span></div></div></td></tr>`:''}`;
+}
+
+/* ---------- listings ---------- */
+function vListings(){
+ if(S.wiz)return vWizard();
+ const ls=LISTINGS.filter(l=>S.brand==='all'||l.brand===S.brand);const sel=ls.find(l=>l.id===S.listSel);
+ return `<div class="head"><div><h1>Listings</h1><p class="sub">Create a product once and publish it to every marketplace, with content written in each language and secondary images for review.</p></div><button class="btn primary" data-act="newListing">New listing</button></div>
+ <div class="split"><section class="panel"><div class="list" role="listbox" aria-label="Listings">${ls.length?ls.map(l=>`<button class="item" role="option" aria-selected="${S.listSel===l.id}" data-act="selListing" data-v="${l.id}"><div class="top"><span class="t">${esc(l.name)}</span><span class="faint" style="font-size:13px">${l.updated}</span></div><div class="m">${esc(brandName(l.brand))}</div><div class="statusdots">${Object.entries(l.st).map(([c,s])=>`<span class="sd ${s}" title="${c}: ${s}">${c}</span>`).join('')}</div></button>`).join(''):'<div class="empty">No listings for this brand partner yet. Create one to publish it across marketplaces.</div>'}</div></section>
+ <section class="panel">${sel?listingDetail(sel):`<div class="empty">Select a listing to see its status in each marketplace.</div>`}</section></div>`;
+}
+function listingDetail(l){const lab={live:'Live',issue:'Needs attention',processing:'Processing',draft:'Draft'};const cls={live:'ok',issue:'bad',processing:'info',draft:'neutral'};
+ return `<div class="detail"><h2>${esc(l.name)}</h2><p class="muted" style="margin:0">${esc(brandName(l.brand))}</p><div style="margin-top:14px">${Object.entries(l.st).map(([c,s])=>`<div class="pubrow"><span class="cc">${c}</span><div><div>${mk(c).n}</div>${l.issue[c]?`<div class="ttl" style="white-space:normal;color:var(--bad)">${esc(l.issue[c])}</div>`:''}</div><div style="display:flex;gap:8px;align-items:center"><span class="pill ${cls[s]}">${lab[s]}</span>${s==='issue'?`<button class="btn small" data-act="fixListing" data-v="${l.id}" data-c="${c}">Mark fixed and resubmit</button>`:''}</div></div>`).join('')}</div></div>`}
+
+function vWizard(){
+ const w=S.wiz;const names=['Product','Marketplaces','Content','Images','Review and publish'];
+ const can=i=>i<=maxStep();
+ return `<div class="head"><div><h1>New listing</h1><p class="sub">Nordhaus Kitchen. Sample product prefilled for the demo.</p></div><button class="btn ghost" data-act="closeWiz">Cancel</button></div>
+ <div class="steps-bar" role="tablist">${names.map((n,i)=>`<button role="tab" data-act="wstep" data-v="${i+1}" ${w.step===i+1?'aria-current="step"':''} class="${i+1<w.step?'done':''}" ${can(i+1)?'':'disabled'}><b>${i+1<w.step?'✓':i+1}</b>${n}</button>`).join('')}</div>
+ ${[w1,w2,w3,w4,w5][w.step-1]()}`;
+}
+function maxStep(){const w=S.wiz;if(!w.main)return 1;if(!w.mkts.length)return 2;if(!w.gen||w.genState!=='done')return 3;if(!imagesReady())return 4;return 5}
+function langsOf(ms){const o={};ms.forEach(c=>{const l=mk(c).l;(o[l]=o[l]||[]).push(c)});return o}
+function w1(){const w=S.wiz,ck=w.mainCheck;
+ return `<section class="panel"><div class="pb" style="padding-top:18px"><div class="form">
+ <div><label for="f-name">Product name</label><input id="f-name" class="inp" data-in="wiz" data-f="name" value="${esc(w.name)}"></div>
+ <div><label for="f-type">Amazon product type</label><select id="f-type" class="sel" style="width:100%" data-in="wiz" data-f="type"><option>COOKWARE</option><option>KITCHEN</option><option>HOME</option></select><div class="hint">Decides which attributes each marketplace requires.</div></div>
+ <div><label for="f-ean">EAN</label><input id="f-ean" class="inp" data-in="wiz" data-f="ean" value="${esc(w.ean)}"></div>
+ <div><label for="f-price">Price in EUR</label><input id="f-price" class="inp" data-in="wiz" data-f="price" value="${esc(w.price)}"><div class="hint">Converted for UK, SE, PL and TR using the brand's price rules.</div></div>
+ <div class="full"><label for="f-feat">Key facts for the writer</label><textarea id="f-feat" class="inp" rows="3" data-in="wiz" data-f="features">${esc(w.features)}</textarea><div class="hint">The AI only uses facts from here, so every claim in the listing can be traced back to the brand.</div></div>
+ <div class="full"><label>Main image</label><div class="mainimg"><div class="frame">${w.main?`<img src="${w.main}" alt="Main product image">`:'<span class="faint" style="font-size:13px">No image</span>'}</div>
+  <div style="flex:1;min-width:220px"><div class="actions" style="margin-top:0"><label class="btn small" style="display:inline-block">Upload photo<input type="file" accept="image/*" data-in="upload" class="sr"></label><button class="btn small" data-act="sampleMain">Use sample photo</button></div>
+  ${ck?`<ul class="checks" style="margin-top:12px">${chk(ck.white,'Pure white background','The corners are not white. Amazon requires RGB 255, 255, 255 for the main image.')}${chk(ck.size,`Longest side ${ck.px} px`,`Longest side is ${ck.px} px. Use at least 1,000 px so shoppers can zoom.`)}${chk(true,'This photo is never edited by AI. Only secondary images are generated.')}</ul>`:'<p class="hint">We check the background and resolution against Amazon\'s main image rules.</p>'}</div></div></div>
+ </div><div class="actions" style="justify-content:flex-end"><button class="btn primary" data-act="wnext" ${w.main?'':'disabled'}>Continue</button></div></div></section>`}
+function chk(ok,good,bad){return `<li><span class="i ${ok===true?'ok':ok==='warn'?'warn':'bad'}">${ok===true?'✓':'!'}</span><span>${ok===true?good:(bad||good)}</span></li>`}
+function w2(){const w=S.wiz,L=langsOf(w.mkts);
+ return `<section class="panel"><div class="pb" style="padding-top:18px"><div class="ph" style="padding:0 0 12px"><h2>Where should it be sold?</h2><div class="controls"><button class="btn small ghost" data-act="mktAll">Select all</button><button class="btn small ghost" data-act="mktNone">Clear</button></div></div>
+ <div class="mkgrid">${MKTS.map(m=>{const on=w.mkts.includes(m.c);return `<button class="mk" data-act="mktToggle" data-v="${m.c}" aria-pressed="${on}"><span class="box">${on?'✓':''}</span><span><b>${m.c}</b> ${m.n}<small>${LANGS[m.l]}</small></span></button>`}).join('')}</div>
+ <p class="muted" style="margin:16px 0 0">${w.mkts.length} marketplaces, ${Object.keys(L).length} languages to write: ${Object.entries(L).map(([l,cs])=>`${LANGS[l]} (${cs.join(', ')})`).join(', ')||'none'}.</p>
+ <div class="actions" style="justify-content:space-between"><button class="btn" data-act="wprev">Back</button><button class="btn primary" data-act="wnext" ${w.mkts.length?'':'disabled'}>Continue</button></div></div></section>`}
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function checksFor(l){const c=S.wiz.gen[l];const all=norm(c.t+' '+c.b.join(' '));const promo=PROMO.filter(p=>norm(c.t+' '+c.b.join(' ')+' '+c.d).includes(norm(p)));const kw=c.k.filter(k=>all.includes(norm(k)));const longB=c.b.filter(b=>b.length>250).length;
+ return [[c.t.length<=200,`Title is ${c.t.length} of 200 characters`,`Title is ${c.t.length} characters, over the 200 limit`],[c.t.startsWith('Nordhaus'),'Title starts with the brand name','Title should start with the brand name'],[promo.length===0,'No promotional claims',`Remove promotional wording: ${promo.join(', ')}`],[kw.length===c.k.length?true:'warn',`Target keywords used: ${c.k.join(', ')}`,`Missing keywords: ${c.k.filter(k=>!kw.includes(k)).join(', ')}`],[longB===0,'Bullet points are within 250 characters',`${longB} bullet points are longer than 250 characters`]]}
+function langOK(l){return checksFor(l).every(c=>c[0]===true)}
+function w3(){const w=S.wiz,L=langsOf(w.mkts),langs=Object.keys(L);
+ if(!w.gen||w.genState!=='done'){const running=w.genState==='running';
+  return `<section class="panel"><div class="pb" style="padding-top:18px"><h2>Write the content</h2><p class="muted" style="margin:6px 0 0">Titles, five bullet points and a description for ${langs.length} languages, written natively in each language from your key facts rather than translated from English.</p>
+  ${running?`<div class="progress">${langs.map(l=>`<div><span>${LANGS[l]}</span><span class="${w.genProg[l]?'up':'faint'}">${w.genProg[l]?'Done':'Writing'}</span></div>`).join('')}</div>`:''}
+  <div class="actions" style="justify-content:space-between"><button class="btn" data-act="wprev">Back</button><button class="btn primary" data-act="generate" ${running?'disabled':''}>${running?'Writing':'Write content for '+langs.length+' languages'}</button></div></div></section>`}
+ const l=w.lang&&L[w.lang]?w.lang:langs[0];w.lang=l;const c=w.gen[l];
+ return `<div class="gen"><section class="panel"><div class="pb" style="padding-top:16px"><div class="tabs" role="tablist">${langs.map(x=>`<button role="tab" aria-selected="${x===l}" data-act="lang" data-v="${x}">${LANGS[x]}<span class="dot" style="background:${langOK(x)?'var(--ok)':'var(--warn)'}"></span></button>`).join('')}</div>
+ <p class="faint" style="margin:-4px 0 12px;font-size:13px">Used for ${L[l].map(c=>mk(c).n).join(', ')}</p>
+ <div class="field"><div class="lab">Title <span id="tcount">${c.t.length} / 200</span></div><textarea class="inp" rows="2" data-in="gen" data-f="t">${esc(c.t)}</textarea></div>
+ ${c.b.map((b,i)=>`<div class="field"><div class="lab">Bullet point ${i+1} <span>${b.length} / 250</span></div><textarea class="inp" rows="2" data-in="gen" data-f="b" data-i="${i}">${esc(b)}</textarea></div>`).join('')}
+ <div class="field"><div class="lab">Description</div><textarea class="inp" rows="5" data-in="gen" data-f="d">${esc(c.d)}</textarea></div>
+ <div class="actions" style="margin-top:4px"><button class="btn small" data-act="rewrite">Rewrite ${LANGS[l]}</button><span class="faint" style="font-size:13px">Edits are kept. Rewriting replaces this language only.</span></div></div></section>
+ <aside class="stack"><section class="panel"><div class="ph"><h3>Checks for ${LANGS[l]}</h3></div><div class="pb"><ul class="checks" id="checks">${checksFor(l).map(x=>chk(x[0],x[1],x[2])).join('')}</ul></div></section>
+ <div class="actions" style="margin-top:0;justify-content:space-between"><button class="btn" data-act="wprev">Back</button><button class="btn primary" data-act="wnext">Continue to images</button></div></aside></div>`}
+function imagesReady(){const im=S.wiz.imgs;if(!im)return false;const kept=im.filter(x=>x.st!=='discarded');return kept.length>0&&kept.every(x=>x.st==='ready'&&x.ok)}
+function w4(){const w=S.wiz;
+ if(!w.imgs)return `<section class="panel"><div class="pb" style="padding-top:18px"><h2>Secondary images</h2><p class="muted" style="margin:6px 0 0;max-width:70ch">Five images generated from your main photo. Text in the images is limited to numbers and units, so one set works in every marketplace.</p><div class="actions" style="justify-content:space-between"><button class="btn" data-act="wprev">Back</button><button class="btn primary" data-act="genImgs">Generate 5 images</button></div></div></section>`;
+ const kept=w.imgs.filter(x=>x.st!=='discarded'),ok=kept.filter(x=>x.ok).length;
+ return `<div class="banner"><span aria-hidden="true">⚠</span><div><b>Check every image against the real product.</b> AI can change shapes, handles or proportions. An image that misrepresents the product can get the listing suppressed, so nothing is published until someone ticks the box under each image.</div></div>
+ <div class="imgs">${w.imgs.map((x,i)=>`<div class="img ${x.st==='discarded'?'discarded':''}"><div class="pic">${x.st==='loading'?'<div class="shimmer"></div>':imgSVG(x.k,x.v)}</div><div class="body"><div class="cap">${IMG_SLOTS[i][1]}</div>
+ ${x.st==='discarded'?`<button class="btn small" data-act="imgRestore" data-i="${i}">Restore</button>`:x.st==='loading'?'<span class="faint" style="font-size:13px">Generating</span>':`<label class="verify"><input type="checkbox" data-in="imgok" data-i="${i}" ${x.ok?'checked':''}>Matches the real product</label><div style="display:flex;gap:6px;margin-top:auto"><button class="btn small" data-act="imgRegen" data-i="${i}">Regenerate</button><button class="btn small ghost" data-act="imgDiscard" data-i="${i}">Discard</button></div>`}</div></div>`).join('')}</div>
+ <div class="actions" style="justify-content:space-between"><button class="btn" data-act="wprev">Back</button><span style="display:flex;gap:12px;align-items:center"><span class="muted" style="font-size:14px">${ok} of ${kept.length} images checked</span><button class="btn primary" data-act="wnext" ${imagesReady()?'':'disabled'}>Continue</button></span></div>`}
+function w5(){const w=S.wiz,kept=w.imgs.filter(x=>x.st!=='discarded').length;const lab={queued:'Waiting',submitted:'Submitted',processing:'Processing',live:'Live',issue:'Needs attention'};const cls={queued:'neutral',submitted:'info',processing:'info',live:'ok',issue:'bad'};
+ const done=w.pub&&w.mkts.every(c=>w.pub[c]==='live');
+ return `<section class="panel"><div class="ph"><div><h2>Ready to publish</h2><p class="muted" style="margin:2px 0 0;font-size:14px">${w.mkts.length} marketplaces, 1 main image and ${kept} secondary images, price €${esc(w.price)}.</p></div>
+ ${w.pub?'':'<button class="btn signal" data-act="publish">Submit to Amazon</button>'}</div><div class="pb">
+ ${w.mkts.map(c=>{const st=w.pub?w.pub[c]:null;const l=mk(c).l;return `<div class="pubrow"><span class="cc">${c}</span><div style="min-width:0"><div>${mk(c).n} <span class="faint" style="font-size:13px">${LANGS[l]}</span></div><div class="ttl">${esc(w.gen[l].t)}</div>${st==='issue'?`<div class="fix"><span style="color:var(--bad);font-size:13.5px">Missing required attribute: country of origin</span><select class="sel" data-in="coo" aria-label="Country of origin"><option value="">Choose country</option><option>China</option><option>Germany</option><option>Poland</option><option>India</option></select><button class="btn small" data-act="resubmit" data-v="${c}">Resubmit</button></div>`:''}</div><span>${st?`<span class="pill ${cls[st]}">${lab[st]}</span>`:'<span class="faint" style="font-size:13px">Not submitted</span>'}</span></div>`}).join('')}
+ <div class="actions" style="justify-content:space-between">${w.pub?'<span></span>':'<button class="btn" data-act="wprev">Back</button>'}${done?'<button class="btn primary" data-act="finishWiz">Done</button>':''}</div></div></section>`}
+
+/* ---------- alerts ---------- */
+function vAlerts(){
+ const base=ALERTS.filter(a=>S.brand==='all'||a.brand===S.brand);
+ const list=base.filter(a=>(S.af.sev==='all'||a.sev===S.af.sev)&&a.status===S.af.status).sort((a,b)=>SEVS.indexOf(a.sev)-SEVS.indexOf(b.sev));
+ const sel=base.find(a=>a.id===S.selAlert)||list[0];if(sel)S.selAlert=sel.id;
+ const cnt=st=>base.filter(a=>a.status===st).length;
+ return `<div class="head"><div><h1>Alerts</h1><p class="sub">Issues from every account and marketplace in one queue, sorted by what costs the most.</p></div>
+ <div class="seg" role="group" aria-label="Status">${[['open','Open'],['snoozed','Snoozed'],['resolved','Resolved']].map(([v,l])=>`<button data-act="astatus" data-v="${v}" aria-pressed="${S.af.status===v}">${l} ${cnt(v)}</button>`).join('')}</div></div>
+ <div class="chips" style="margin-bottom:14px" role="group" aria-label="Severity">${['all',...SEVS].map(s=>`<button class="chip" data-act="asev" data-v="${s}" aria-pressed="${S.af.sev===s}">${s==='all'?'All severities':s[0].toUpperCase()+s.slice(1)}</button>`).join('')}</div>
+ <div class="split"><section class="panel"><div class="list" role="listbox" aria-label="Alerts">${list.length?list.map(a=>`<button class="item" role="option" aria-selected="${sel&&sel.id===a.id}" data-act="selAlert" data-v="${a.id}"><div class="top"><span style="display:flex;gap:10px"><span class="sev ${a.sev}" aria-label="${a.sev}"></span><span class="t">${esc(a.title)}</span></span><span class="cc">${a.mkt}</span></div><div class="m" style="padding-left:19px">${a.type}, ${esc(brandName(a.brand))}, ${a.ago}${a.assignee?`, ${esc(a.assignee.split(' ')[0])}`:''}</div></button>`).join(''):`<div class="empty">${S.af.status==='open'?'No open alerts match this filter.':'Nothing here yet.'}</div>`}</div></section>
+ <section class="panel">${sel&&list.includes(sel)?alertDetail(sel):'<div class="empty">Select an alert to see what happened and what to do.</div>'}</section></div>`;
+}
+function alertDetail(a){const s=skuInfo(a.sku);
+ return `<div class="detail"><div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><span class="pill ${a.sev==='critical'?'bad':a.sev==='high'?'warn':a.sev==='medium'?'info':'neutral'}">${a.sev[0].toUpperCase()+a.sev.slice(1)}</span><span class="pill neutral">${a.type}</span></div>
+ <h2>${esc(a.title)}</h2><p style="margin:0;max-width:70ch">${esc(a.detail)}</p>
+ <dl class="kv"><dt>Impact</dt><dd>${esc(a.impact)}</dd><dt>Product</dt><dd>${esc(s.name)} <span class="faint">${a.sku}, ${asin(a.sku)}</span></dd><dt>Brand</dt><dd>${esc(brandName(a.brand))}</dd><dt>Marketplace</dt><dd>${mk(a.mkt).n}</dd><dt>Owner</dt><dd><select class="sel" data-in="assign" data-v="${a.id}" aria-label="Owner"><option value="">Unassigned</option>${TEAM.map(t=>`<option ${a.assignee===t?'selected':''}>${t}</option>`).join('')}</select></dd></dl>
+ <h3>What to do</h3><ol class="steps">${a.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+ <div class="sourcenote" style="background:${a.api?'var(--soft)':'var(--warnbg)'}">${a.api?'Detected automatically. Source: ':'<b style="color:var(--warn)">Not automated.</b> '}${esc(a.source)}</div>
+ <div class="actions">${a.canCase?`<button class="btn primary" data-act="draftCase" data-v="${a.id}">Draft support case</button>`:''}${a.link==='overview'?'<button class="btn primary" data-act="go" data-v="overview">Open restock recommendation</button>':''}${a.link==='listings'?'<button class="btn primary" data-act="go" data-v="listings">Open listings</button>':''}
+ ${a.status==='open'?`<button class="btn" data-act="snooze" data-v="${a.id}">Snooze 24 hours</button><button class="btn" data-act="resolve" data-v="${a.id}">Mark resolved</button>`:`<button class="btn" data-act="reopen" data-v="${a.id}">Reopen</button>`}</div></div>`}
+
+/* ---------- cases ---------- */
+function dueTxt(k){if(k.status==='Draft')return '<span class="pill warn">Not submitted</span>';if(k.status==='Resolved'||k.due==null)return '<span class="faint">None</span>';if(k.due<0){const d=Math.round(-k.due/24);return `<span class="pill bad">Overdue ${d>=1?d+(d===1?' day':' days'):Math.round(-k.due)+' h'}</span>`}return `<span class="muted">In ${k.due<24?k.due+' h':Math.round(k.due/24)+' days'}</span>`}
+const stPill=s=>`<span class="pill ${s==='Resolved'?'ok':s==='Needs reply'?'bad':s==='Draft'?'warn':'info'}">${s}</span>`;
+function vCases(){
+ const list=CASES.filter(k=>S.brand==='all'||k.brand===S.brand);const sel=list.find(k=>k.id===S.selCase)||list[0];if(sel)S.selCase=sel.id;
+ return `<div class="head"><div><h1>Support cases</h1><p class="sub">Every Seller Support case with its status, owner and next follow-up.</p></div></div>
+ <div class="banner"><span aria-hidden="true">ⓘ</span><div><b>Amazon has no API for support cases.</b> You still submit and reply in Seller Central. This tool writes the text, keeps track of every case and reminds you when to follow up. Amazon's case emails can update the status automatically.</div></div>
+ <div class="split"><section class="panel"><div class="list" role="listbox" aria-label="Cases">${list.map(k=>`<button class="item" role="option" aria-selected="${sel&&sel.id===k.id}" data-act="selCase" data-v="${k.id}"><div class="top"><span class="t">${esc(k.subject)}</span>${stPill(k.status)}</div><div class="m" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>${esc(brandName(k.brand))}, ${k.mkt}${k.caseId?', case '+k.caseId:''}</span><span>Follow-up: ${dueTxt(k)}</span></div></button>`).join('')||'<div class="empty">No cases for this brand partner.</div>'}</div></section>
+ <section class="panel">${sel?caseDetail(sel):''}</section></div>`;
+}
+function caseDetail(k){
+ const top=`<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">${stPill(k.status)}<span class="pill neutral">${k.mkt}</span></div><h2>${esc(k.subject)}</h2><dl class="kv"><dt>Brand</dt><dd>${esc(brandName(k.brand))}</dd>${k.sku?`<dt>Product</dt><dd>${esc(skuInfo(k.sku).name)} <span class="faint">${asin(k.sku)}</span></dd>`:''}<dt>Case ID</dt><dd>${k.caseId||'<span class="faint">Added after you submit it</span>'}</dd><dt>Owner</dt><dd>${esc(k.owner)}</dd><dt>Follow-up</dt><dd>${dueTxt(k)}</dd></dl>`;
+ if(k.status==='Draft'||S.caseMode==='followup'){const dr=k.draft;
+  return `<div class="detail">${top}<h3>${k.status==='Draft'?'Case text, written by AI from the alert':'Follow-up, written by AI'}</h3>
+  <div class="field" style="margin-top:10px"><div class="lab">Subject</div><input class="inp" data-in="draft" data-f="subject" value="${esc(dr.subject)}"></div>
+  <div class="field"><div class="lab">Message</div><textarea class="inp" rows="14" data-in="draft" data-f="body">${esc(dr.body)}</textarea></div>
+  <div class="actions" style="margin-top:0"><button class="btn" data-act="copyDraft">Copy text</button><a class="btn" href="https://sellercentral.amazon.de/" target="_blank" rel="noopener">Open Seller Central</a></div>
+  ${k.status==='Draft'?`<div class="field" style="margin-top:18px"><div class="lab">After submitting, paste the case ID from Amazon</div><div style="display:flex;gap:8px"><input class="inp" id="caseIdIn" inputmode="numeric" placeholder="For example 15741209935"><button class="btn primary" data-act="submitted">Start tracking</button></div></div>`:`<div class="actions"><button class="btn primary" data-act="followSent">I've sent the follow-up</button><button class="btn ghost" data-act="cancelMode">Cancel</button></div>`}</div>`}
+ if(S.caseMode==='reply')return `<div class="detail">${top}<h3>Paste Amazon's reply</h3><textarea class="inp" id="replyIn" rows="7" style="margin-top:10px" placeholder="Paste the text from the Seller Central case or the email"></textarea><div class="actions"><button class="btn primary" data-act="saveReply">Save and summarise</button><button class="btn ghost" data-act="cancelMode">Cancel</button></div></div>`;
+ return `<div class="detail">${top}${k.sum&&k.status==='Needs reply'?`<div class="summary"><b>Amazon is asking for</b>${esc(k.sum.ask)}<b style="margin-top:8px">Suggested next step</b>${esc(k.sum.next)}</div>`:''}
+ <h3 style="margin-top:18px">History</h3><ul class="tl">${k.tl.map(([t,w,x,amz])=>`<li class="${amz?'amz':''}"><div class="w">${t}, ${esc(w)}</div>${esc(x)}</li>`).join('')}</ul>
+ ${k.status!=='Resolved'?`<div class="actions"><button class="btn primary" data-act="logReply">Log Amazon's reply</button><button class="btn" data-act="draftFollow">Write follow-up</button><button class="btn ghost" data-act="resolveCase">Mark resolved</button></div>`:''}</div>`;
+}
+
+/* ---------- modal ---------- */
+function renderModal(){const L=$('#layer');if(!S.modal){L.innerHTML='';return}
+ const rows=restockRows().filter(x=>dec(x).st==='approved');const g={};rows.forEach(x=>(g[x.c]=g[x.c]||[]).push(x));
+ L.innerHTML=`<div class="overlay" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt" data-stop="1"><h2 id="mt" style="font-size:20px">Shipment plan draft</h2><p class="muted" style="margin:4px 0 16px">Grouped by destination marketplace. In the full build this creates draft inbound plans through the SP-API, which you confirm in Seller Central before booking transport.</p>
+ ${Object.entries(g).map(([c,xs])=>`<h3 style="margin-top:14px"><span class="cc">${c}</span> ${mk(c).n}</h3><table style="margin-top:6px"><tbody>${xs.map(x=>`<tr><td>${esc(x.name)} <span class="faint">${x.sku}</span></td><td class="num">${num(dec(x).qty)} units</td><td class="num">${Math.ceil(dec(x).qty/x.pack)} cases</td></tr>`).join('')}</tbody></table>`).join('')}
+ <div class="actions" style="justify-content:flex-end"><button class="btn ghost" data-act="closeModal">Close</button><button class="btn primary" data-act="createPlan">Create draft plans</button></div></div></div>`;
+ setTimeout(()=>{const b=L.querySelector('.modal .btn.primary');b&&b.focus()},0);
+}
+
+/* ---------- image check ---------- */
+function checkMain(src,known){return new Promise(res=>{if(known)return res(known);const im=new Image();im.onload=()=>{try{const w=im.naturalWidth,h=im.naturalHeight,cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');x.drawImage(im,0,0);const pts=[[1,1],[w-2,1],[1,h-2],[w-2,h-2],[Math.floor(w/2),1],[1,Math.floor(h/2)]];const white=pts.every(([a,b])=>{const d=x.getImageData(a,b,1,1).data;return d[0]>=250&&d[1]>=250&&d[2]>=250});res({white,size:Math.max(w,h)>=1000,px:Math.max(w,h)})}catch(e){res({white:'warn',size:true,px:Math.max(im.naturalWidth,im.naturalHeight)})}};im.onerror=()=>res({white:'warn',size:false,px:0});im.src=src})}
+
+/* ---------- actions ---------- */
+const findRow=k=>restockRows().find(x=>x.key===k);
+const A={
+ go:d=>{S.view=d.v;S.caseMode=null;render();$('#main').scrollTop=0},
+ period:d=>{S.period=d.v;render()},
+ mktrow:d=>{S.mkt=S.mkt===d.v?'all':d.v;render()},
+ why:d=>{S.open=S.open===d.k?null:d.k;render()},
+ approve:d=>{dec(findRow(d.k)).st='approved';render()},
+ skip:d=>{dec(findRow(d.k)).st='skipped';render()},
+ undo:d=>{dec(findRow(d.k)).st='pending';render()},
+ approveAll:()=>{restockRows().forEach(x=>{const q=dec(x);if(q.st==='pending')q.st='approved'});render()},
+ plan:()=>{S.modal='plan';renderModal()},
+ closeModal:(d,el,e)=>{if(e.target.closest('[data-stop]')&&!el.matches('.btn'))return;S.modal=null;renderModal()},
+ createPlan:()=>{const cs=[...new Set(restockRows().filter(x=>dec(x).st==='approved').map(x=>x.c))];restockRows().forEach(x=>{const q=dec(x);if(q.st==='approved')q.st='planned'});S.modal=null;render();toast(`Draft plans created for ${cs.join(', ')}. Confirm them in Seller Central before booking transport.`)},
+ newListing:()=>{S.wiz=newWiz();render()},
+ closeWiz:()=>{S.wiz=null;render()},
+ selListing:d=>{S.listSel=d.v;render()},
+ fixListing:d=>{const l=LISTINGS.find(x=>x.id===d.v);l.st[d.c]='processing';delete l.issue[d.c];render();setTimeout(()=>{l.st[d.c]='live';if(S.view==='listings'&&!S.wiz)render()},2200)},
+ wstep:d=>{if(+d.v<=maxStep()){S.wiz.step=+d.v;render()}},
+ wnext:()=>{S.wiz.step=Math.min(5,S.wiz.step+1);render();$('#main').scrollTop=0},
+ wprev:()=>{S.wiz.step--;render()},
+ sampleMain:async()=>{const w=S.wiz;w.main=svgURL(imgSVG('main',0));w.mainCheck={white:true,size:true,px:2000};render()},
+ mktToggle:d=>{const w=S.wiz;w.mkts=w.mkts.includes(d.v)?w.mkts.filter(c=>c!==d.v):[...w.mkts,d.v];render()},
+ mktAll:()=>{S.wiz.mkts=MKTS.map(m=>m.c);render()},
+ mktNone:()=>{S.wiz.mkts=[];render()},
+ generate:()=>{const w=S.wiz,langs=Object.keys(langsOf(w.mkts));w.genState='running';w.genProg={};w.gen=w.gen||{};render();
+  langs.forEach((l,i)=>setTimeout(()=>{w.gen[l]=w.gen[l]||JSON.parse(JSON.stringify(CONTENT[l]));w.genProg[l]=1;if(i===langs.length-1){w.genState='done';w.lang=langs[0]}if(S.wiz===w&&w.step===3)render()},450+i*380))},
+ lang:d=>{S.wiz.lang=d.v;render()},
+ rewrite:()=>{const w=S.wiz;w.gen[w.lang]=JSON.parse(JSON.stringify(CONTENT[w.lang]));render();toast(`${LANGS[w.lang]} content rewritten.`)},
+ genImgs:()=>{const w=S.wiz;w.imgs=IMG_SLOTS.map(([k])=>({k,v:0,st:'loading',ok:false}));render();w.imgs.forEach((x,i)=>setTimeout(()=>{x.st='ready';if(S.wiz===w&&w.step===4)render()},700+i*420))},
+ imgRegen:d=>{const x=S.wiz.imgs[+d.i];x.st='loading';x.ok=false;x.v++;render();setTimeout(()=>{x.st='ready';if(S.wiz&&S.wiz.step===4)render()},900)},
+ imgDiscard:d=>{S.wiz.imgs[+d.i].st='discarded';render()},
+ imgRestore:d=>{S.wiz.imgs[+d.i].st='ready';S.wiz.imgs[+d.i].ok=false;render()},
+ publish:()=>{const w=S.wiz;w.pub={};w.mkts.forEach(c=>w.pub[c]='queued');render();
+  w.mkts.forEach((c,i)=>{const t=i*300;setTimeout(()=>{w.pub[c]='submitted';S.wiz===w&&render()},300+t);setTimeout(()=>{w.pub[c]='processing';S.wiz===w&&render()},1300+t);setTimeout(()=>{w.pub[c]=(c==='TR'||c==='PL')?'issue':'live';S.wiz===w&&render()},2700+t+(c==='PL'?800:0))})},
+ resubmit:(d,el)=>{const v=el.parentElement.querySelector('select').value;if(!v){toast('Choose the country of origin first.');return}const w=S.wiz;w.pub[d.v]='processing';w.coo=v;render();setTimeout(()=>{w.pub[d.v]='live';S.wiz===w&&render()},1600)},
+ finishWiz:()=>{const w=S.wiz;const st={};w.mkts.forEach(c=>st[c]='live');LISTINGS.unshift({id:'L'+Date.now(),brand:'nordhaus',name:w.name,updated:'Just now',st,issue:{}});S.listSel=LISTINGS[0].id;S.wiz=null;if(S.brand!=='all'&&S.brand!=='nordhaus'){S.brand='all';$('#brandSel').value='all'}render();toast(`${w.name} is live in ${w.mkts.length} marketplaces.`)},
+ astatus:d=>{S.af.status=d.v;S.selAlert=null;render()},
+ asev:d=>{S.af.sev=d.v;S.selAlert=null;render()},
+ selAlert:d=>{S.selAlert=d.v;render()},
+ snooze:d=>{ALERTS.find(a=>a.id===d.v).status='snoozed';S.selAlert=null;render();toast('Snoozed for 24 hours.')},
+ resolve:d=>{ALERTS.find(a=>a.id===d.v).status='resolved';S.selAlert=null;render();toast('Marked resolved.')},
+ reopen:d=>{ALERTS.find(a=>a.id===d.v).status='open';S.af.status='open';render()},
+ draftCase:d=>{const a=ALERTS.find(x=>x.id===d.v);const dr=caseDraft(a);const k={id:'K'+(caseSeq++),brand:a.brand,mkt:a.mkt,sku:a.sku,subject:dr.subject,status:'Draft',caseId:null,opened:'Not yet',due:null,owner:a.assignee||'Ola Nowak',tl:[['Just now','Paravostra Ops','Drafted from the alert: '+a.title]],draft:dr};CASES.unshift(k);S.selCase=k.id;S.view='cases';S.caseMode=null;render()},
+ selCase:d=>{S.selCase=d.v;S.caseMode=null;render()},
+ copyDraft:()=>{const k=CASES.find(x=>x.id===S.selCase);const t=k.draft.subject+'\n\n'+k.draft.body;try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Paste it into the case form in Seller Central.'),()=>toast('Copy was blocked by the browser. Select the text and copy it manually.'))}catch(e){toast('Copy was blocked by the browser. Select the text and copy it manually.')}},
+ submitted:()=>{const v=($('#caseIdIn').value||'').trim();if(!/^\d{6,}$/.test(v)){toast('Enter the numeric case ID from Seller Central.');return}const k=CASES.find(x=>x.id===S.selCase);k.caseId=v;k.status='Awaiting Amazon';k.opened='Today';k.due=48;k.tl.push(['Just now',k.owner,'Submitted in Seller Central. Tracking started.']);render();toast('Tracking case '+v+'. Follow-up reminder in 48 hours.')},
+ logReply:()=>{S.caseMode='reply';render()},
+ saveReply:()=>{const v=($('#replyIn').value||'').trim();if(!v){toast('Paste the reply first.');return}const k=CASES.find(x=>x.id===S.selCase);k.tl.push(['Just now','Amazon',v,1]);const low=v.toLowerCase();
+  k.sum=/invoice|receipt/.test(low)?{ask:'A supplier invoice for the units in question.',next:'Get the invoice from the brand partner, check that the product names and quantities match, and reply on the case with it attached.'}:/(photo|image|picture)/.test(low)?{ask:'Photos of the product or packaging.',next:'Ask the warehouse or the brand for photos showing the label and barcode, then reply with them.'}:/resolved|reimburs|approved|reinstated/.test(low)?{ask:'Nothing. Amazon reports the issue as handled.',next:'Check that the fix is visible in Seller Central, then mark the case resolved.'}:{ask:'More information about the issue.',next:'Read the reply in full and answer each question Amazon asks in a single message.'};
+  k.status='Needs reply';k.due=24;S.caseMode=null;render()},
+ draftFollow:()=>{const k=CASES.find(x=>x.id===S.selCase);k.draft=followUp(k);S.caseMode='followup';render()},
+ followSent:()=>{const k=CASES.find(x=>x.id===S.selCase);k.tl.push(['Just now',k.owner,'Sent a follow-up.']);k.status='Awaiting Amazon';k.due=48;S.caseMode=null;render();toast('Next follow-up reminder in 48 hours.')},
+ cancelMode:()=>{S.caseMode=null;render()},
+ resolveCase:()=>{const k=CASES.find(x=>x.id===S.selCase);k.status='Resolved';k.due=null;k.tl.push(['Just now',k.owner,'Marked as resolved.']);render()}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;if(el.dataset.act==='closeModal'&&el.classList.contains('overlay')&&e.target!==el)return;const f=A[el.dataset.act];if(f){if(el.tagName==='A')return;f(el.dataset,el,e)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.modal){S.modal=null;renderModal()}if((e.key==='Enter'||e.key===' ')&&e.target.matches('tr[data-act]')){e.preventDefault();A[e.target.dataset.act](e.target.dataset,e.target,e)}});
+document.addEventListener('change',e=>{const t=e.target,k=t.dataset.in;if(!k)return;
+ if(k==='mkt'){S.mkt=t.value;render()}
+ else if(k==='qty'){const d=S.dec[t.dataset.k];const r=findRow(t.dataset.k);let v=Math.max(0,Math.round(+t.value||0));v=Math.ceil(v/r.pack)*r.pack;d.qty=v;t.value=v}
+ else if(k==='assign'){ALERTS.find(a=>a.id===t.dataset.v).assignee=t.value||null;render()}
+ else if(k==='imgok'){S.wiz.imgs[+t.dataset.i].ok=t.checked;render()}
+ else if(k==='upload'){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{S.wiz.main=r.result;S.wiz.mainCheck=null;render();S.wiz.mainCheck=await checkMain(r.result);render()};r.readAsDataURL(f)}
+});
+document.addEventListener('input',e=>{const t=e.target,k=t.dataset.in;if(!k)return;
+ if(k==='wiz'){S.wiz[t.dataset.f]=t.value}
+ else if(k==='gen'){const c=S.wiz.gen[S.wiz.lang];if(t.dataset.f==='b')c.b[+t.dataset.i]=t.value;else c[t.dataset.f]=t.value;
+  const lab=t.parentElement.querySelector('.lab span');if(lab&&t.dataset.f!=='d')lab.textContent=`${t.value.length} / ${t.dataset.f==='t'?200:250}`;
+  $('#checks').innerHTML=checksFor(S.wiz.lang).map(x=>chk(x[0],x[1],x[2])).join('');
+  const dot=document.querySelector('.tabs [aria-selected="true"] .dot');if(dot)dot.style.background=langOK(S.wiz.lang)?'var(--ok)':'var(--warn)'}
+ else if(k==='draft'){CASES.find(x=>x.id===S.selCase).draft[t.dataset.f]=t.value}
+});
+const bs=$('#brandSel');bs.innerHTML=`<option value="all">All brand partners</option>`+BRANDS.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+bs.addEventListener('change',()=>{S.brand=bs.value;S.selAlert=null;S.selCase=null;S.listSel=null;S.open=null;render()});
+render();
+</script>
+</body>
+</html>
